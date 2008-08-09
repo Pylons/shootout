@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head></head>
+<body>
+    <div id="home_link">
+        <p><a href="${app_url}">Back to home page</a></p>
+    </div>
+    <div tal:replace="structure toolbar" />
+    <div id="message" tal:condition="message">
+        <p>${message}</p>
+    </div>
+    <h1>Register</h1>
+    <form action="register" method="post">
+        <fieldset>
+            <label for="username">Username</label>
+            <input type="text" name="username" />
+            <br />
+            <label for="password">Password</label>
+            <input type="password" name="password" />
+            <br />
+            <label for="confirm_password">Confirm password</label>
+            <input type="password" name="confirm_password" />
+            <br />
+            <label for="name">Full name</label>
+            <input type="text" name="name" />
+            <br />
+            <label for="email">Email</label>
+            <input type="text" name="email" />
+            <br />
+            <input type="submit" name="form.submitted" value="Register" />
+        </fieldset>
+    </form>
+</body>
+</html>

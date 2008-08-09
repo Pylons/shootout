@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head></head>
+<body>
+    <div id="home_link">
+        <p><a href="${app_url}">Back to home page</a></p>
+    </div>
+    <div tal:replace="structure toolbar" />
+    <h1>${user.name}</h1>
+    <p>login: <b>${user.username}</b>.</p>
+    <h3>Performance</h3>
+    <p>Hits: <b>${user.hits}</b>.</p>
+    <p>Misses: <b>${user.misses}</b>.</p>
+    <h3>Vote history</h3>
+    <p>Hits: <b>${user.delivered_hits}</b>.</p>
+    <p>Misses: <b>${user.delivered_misses}</b>.</p>
+</body>
+</html>
