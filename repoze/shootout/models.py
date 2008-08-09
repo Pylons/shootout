@@ -1,9 +1,5 @@
-import os
-import re
-
 from zope.interface import implements
 from zope.interface import Interface
-from zope.location.interfaces import ILocation
 
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
@@ -11,8 +7,6 @@ from repoze.bfg.security import Authenticated
 
 from repoze.bfg.urldispatch import RoutesMapper
 
-from sqlalchemy.exceptions import IntegrityError
-from sqlalchemy.exceptions import InvalidRequestError
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import mapper

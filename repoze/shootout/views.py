@@ -3,12 +3,9 @@ import sha
 import webob
 import formencode
 from webob.exc import HTTPFound
-from paste import urlparser
 
 from repoze.bfg.template import render_template_to_response, render_template
-from repoze.bfg.traversal import model_url
 from repoze.bfg.security import authenticated_userid
-from repoze.bfg.security import has_permission
 
 from repoze.shootout.models import DBSession
 from repoze.shootout.models import User, Idea
