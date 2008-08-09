@@ -119,12 +119,13 @@ def user_add(context, request):
             form = schema.to_python(params)
         except formencode.validators.Invalid, why:
             message=str(why)
+            url = "%s/register?message=%s" % (app_url,message)
         else:
             password='{SHA}%s' % sha.new(password).hexdigest()
             user = User(username=username, password=password, name=name, email=email)
             DBSession.save(user)
             DBSession.commit()
-        url = "%s/register?message=%s" % (app_url,message)
+            url = "%s?message=%s" % (app_url,message)
         return HTTPFound(location=url)
     return render_template_to_response('templates/user_add.pt',
                                        message=message,
