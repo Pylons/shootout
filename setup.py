@@ -9,6 +9,17 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
+requires = [
+    'setuptools',
+    'repoze.bfg',
+    'repoze.who',
+    'SQLAlchemy',
+    ]
+import sys
+
+if sys.version_info[:3] < (2,5,0):
+    requires.append('pysqlite')
+
 setup(name='repoze.shootout',
       version='0.1',
       description='A generic idea discussion and rating app',
@@ -31,14 +42,8 @@ setup(name='repoze.shootout',
       include_package_data=True,
       namespace_packages=['repoze'],
       zip_safe=False,
-      install_requires=[
-            'repoze.bfg',
-            'repoze.who',
-            ],
-      tests_require=[
-            'repoze.bfg',
-            'repoze.who',
-            ],
+      install_requires=requires,
+      tests_require=requires,
       test_suite="repoze.shootout.tests",
       entry_points = """\
       [paste.app_factory]
