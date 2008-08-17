@@ -7,7 +7,7 @@
     </div>
     <div tal:replace="structure toolbar" />
     <h1>${idea.title}</h1>
-    <p>By <a href="${app_url}/users/${poster.user_id}">${poster.name}</a>.</p>
+    <p>By <a href="${app_url}/users/${poster.username}">${poster.name}</a>.</p>
     <p>Hits: <b>${idea.hits}</b>.</p>
     <p>Misses: <b>${idea.misses}</b>.</p>
     <p tal:content="idea.text"></p>

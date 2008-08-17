@@ -12,25 +12,25 @@
   <div tal:condition="last10">
   <h3>Latest shots</h3>
   <ul>
-      <li tal:repeat="idea last10"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.user_id}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+      <li tal:repeat="idea last10"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
   </ul>
   </div>
   <div tal:condition="top">
   <h3>Most hits</h3>
   <ul>
-      <li tal:repeat="idea top"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.user_id}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+      <li tal:repeat="idea top"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
   </ul>
   </div>
   <div tal:condition="bottom">
   <h3>Most misses</h3>
   <ul>
-      <li tal:repeat="idea bottom"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.user_id}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+      <li tal:repeat="idea bottom"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
   </ul>
   </div>
   <div tal:condition="hitpct">
   <h3>Best performance</h3>
   <ul>
-      <li tal:repeat="idea hitpct"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.user_id}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+      <li tal:repeat="idea hitpct"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
   </ul>
   </div>
 </body>

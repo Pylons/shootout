@@ -134,7 +134,7 @@ def user_add(context, request):
 
 def user_view(context, request):
     app_url = request.application_url
-    user = DBSession.query(User).filter(User.user_id==context.user).one()
+    user = DBSession.query(User).filter(User.username==context.user).one()
     return render_template_to_response('templates/user.pt',
                                        user=user,
                                        toolbar=toolbar_view(context,request),
