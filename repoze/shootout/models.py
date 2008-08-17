@@ -75,7 +75,7 @@ tags_table = Table(
     'tags',
     metadata,
     Column('tag_id', Integer, primary_key=True),
-    Column('name', String(50), index=True)
+    Column('name', String(50), unique=True, nullable=False, index=True)
 )
 
 ideas_tags_table = Table(
@@ -128,7 +128,7 @@ idea_mapper = mapper(Idea, ideas_table, properties={
         ((ideas_table.c.hits>0 or ideas_table.c.misses>0) and (ideas_table.c.hits/(ideas_table.c.hits+ideas_table.c.misses)*100) or 0).label('hit_percentage')
     ),
     'users':relation(User, order_by=users_table.c.user_id),
-    'tags':relation(Tag, secondary=ideas_tags_table, lazy=False),
+    'tags':relation(Tag, secondary=ideas_tags_table, backref='ideas'),
 })
 
 class IRange(Interface):

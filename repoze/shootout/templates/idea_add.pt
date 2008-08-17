@@ -19,10 +19,13 @@
     <form id="idea_add_form" action="idea_add" method="post">
     <fieldset>
         <label for="title">Title:</label>
-        <input type="text" name="title" />
+        <input type="text" name="title" size="60" />
         <br />
         <label for="text">Text:</label>
         <textarea name="text" rows="10" cols="60"> </textarea>
+        <br />
+        <label for="tags">Tags:</label>
+        <input type="text" name="tags" size="60" />
         <br />
         <input tal:condition="target" type="hidden" name="target" value="${target.idea_id}" />
         <input type="submit" name="form.submitted" value="Shoot" />

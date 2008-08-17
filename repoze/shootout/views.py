@@ -8,7 +8,7 @@ from repoze.bfg.template import render_template_to_response, render_template
 from repoze.bfg.security import authenticated_userid
 
 from repoze.shootout.models import DBSession
-from repoze.shootout.models import User, Idea
+from repoze.shootout.models import User, Idea, Tag
 
 COOKIE_VOTED = 'repoze.shootout.voted'
 
@@ -59,6 +59,7 @@ class AddIdea(formencode.Schema):
     allow_extra_fields = True
     title = formencode.validators.String(not_empty=True)
     text = formencode.validators.String(not_empty=True)
+    tags = formencode.validators.String(not_empty=True)
 
 def idea_add(context, request):
     app_url = request.application_url
@@ -66,8 +67,9 @@ def idea_add(context, request):
     message = params.get('message','')
     if params.get('form.submitted'):
         target = params.get('target', None)
-        title = params.get('title', None)
-        text = params.get('text', None)
+        title = params.get('title')
+        text = params.get('text')
+        tags = params.get('tags')
         schema = AddIdea()
         try:
             form = schema.to_python(params)
@@ -78,6 +80,16 @@ def idea_add(context, request):
             author_id = authenticated_userid(request)
             author = DBSession.query(User).filter(User.username==author_id).one().user_id
             idea = Idea(target=target, author=author, title=title, text=text)
+            tags = tags.replace(';',' ').replace(',',' ')
+            tags = [tag.lower() for tag in tags.split()]
+            tags = set(tags)
+            if '' in tags:
+                tags.remove('')
+            for tagname in tags:
+                tag = DBSession.query(Tag).filter(Tag.name==tagname).all()
+                if not tag:
+                    tag = Tag(name=tagname)
+                    idea.tags.append(tag)
             DBSession.save(idea)
             DBSession.commit()
             url = "%s/ideas/%s" % (app_url,idea.idea_id)
