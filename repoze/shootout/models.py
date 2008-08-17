@@ -71,6 +71,30 @@ class User(object):
 
 user_mapper = mapper(User, users_table)
 
+tags_table = Table(
+    'tags',
+    metadata,
+    Column('tag_id', Integer, primary_key=True),
+    Column('name', String(50), index=True)
+)
+
+ideas_tags_table = Table(
+    'ideas_tags',
+    metadata,
+    Column('idea_id', Integer, ForeignKey('ideas.idea_id'), primary_key=True),
+    Column('tag_id', Integer, ForeignKey('tags.tag_id'), primary_key=True),
+)
+
+class ITag(Interface):
+    pass
+
+class Tag(object):
+    implements(ITag)
+    def __init__(self, name):
+        self.name = name
+
+tag_mapper = mapper(Tag, tags_table)
+
 ideas_table = Table(
     'ideas',
     metadata,
@@ -104,6 +128,7 @@ idea_mapper = mapper(Idea, ideas_table, properties={
         ((ideas_table.c.hits>0 or ideas_table.c.misses>0) and (ideas_table.c.hits/(ideas_table.c.hits+ideas_table.c.misses)*100) or 0).label('hit_percentage')
     ),
     'users':relation(User, order_by=users_table.c.user_id),
+    'tags':relation(Tag, secondary=ideas_tags_table, lazy=False),
 })
 
 class IRange(Interface):
@@ -126,4 +151,5 @@ def get_root():
     root = RoutesMapper(fallback_get_root)
     root.connect('ideas/:idea', controller='ideas')
     root.connect('users/:user', controller='users')
+    root.connect('tags/:tag', controller='tags')
     return root
