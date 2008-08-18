@@ -9,29 +9,13 @@
   <h1>The Shooting Range</h1>
   <p>This is a place to discuss and vote on ideas of all kind. Want to know what others think about your idea? Give it a shot.</p>
   <p><a href="idea_add">What's your idea?</a></p>
-  <div tal:condition="last10">
-  <h3>Latest shots</h3>
-  <ul>
-      <li tal:repeat="idea last10"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
-  </ul>
-  </div>
-  <div tal:condition="top">
-  <h3>Most hits</h3>
-  <ul>
-      <li tal:repeat="idea top"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
-  </ul>
-  </div>
-  <div tal:condition="bottom">
-  <h3>Most misses</h3>
-  <ul>
-      <li tal:repeat="idea bottom"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
-  </ul>
-  </div>
-  <div tal:condition="hitpct">
-  <h3>Best performance</h3>
-  <ul>
-      <li tal:repeat="idea hitpct"><a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
-  </ul>
+  <div tal:condition="toplists">
+      <div tal:repeat="toplist toplists">
+          <h3>${toplist['title']}</h3>
+          <ul>
+              <li tal:repeat="idea toplist['items']"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+          </ul>
+      </div>
   </div>
 </body>
 </html>

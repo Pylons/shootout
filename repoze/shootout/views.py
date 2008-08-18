@@ -19,14 +19,17 @@ def main_view(context, request):
     top = DBSession.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.hits.desc()).all()[:10]
     bottom = DBSession.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.misses.desc()).all()[:10]
     last10 = DBSession.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.idea_id.desc()).all()[:10]
+    toplists=[
+              {'title':'Latest shots','items':last10},
+              {'title':'Most hits','items':top},
+              {'title':'Most misses','items':bottom},
+              {'title':'Best performance','items':hitpct},
+             ]
     return render_template_to_response('templates/main.pt',
                                        app_url=request.application_url,
                                        message=message,
                                        toolbar=toolbar_view(context,request),
-                                       hitpct=hitpct,
-                                       top=top,
-                                       bottom=bottom,
-                                       last10=last10)
+                                       toplists=toplists)
 
 def idea_vote(context, request):
     app_url = request.application_url
@@ -86,11 +89,12 @@ def idea_add(context, request):
             if '' in tags:
                 tags.remove('')
             for tagname in tags:
-                tag = DBSession.query(Tag).filter(Tag.name==tagname).all()
-                if not tag:
+                existent = DBSession.query(Tag).filter(Tag.name==tagname).all()
+                if not existent:
                     tag = Tag(name=tagname)
                     idea.tags.append(tag)
-            DBSession.save(idea)
+                else:
+                    idea.tags.append(existent[0])
             DBSession.commit()
             url = "%s/ideas/%s" % (app_url,idea.idea_id)
         return HTTPFound(location=url)
@@ -167,6 +171,14 @@ def idea_view(context, request):
                                        comments=comments,
                                        viewer_username=viewer_username,
                                        idea=idea)
+
+def tag_view(context, request):
+    ideas = DBSession.query(Idea).filter(Idea.tags.any(name=context.tag)).all()
+    return render_template_to_response('templates/tag.pt',
+                                       tag=context.tag,
+                                       app_url=request.application_url,
+                                       toolbar=toolbar_view(context,request),
+                                       ideas=ideas)
 
 def logout_view(context, request):
     response = webob.Response()

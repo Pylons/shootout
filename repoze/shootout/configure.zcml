@@ -25,6 +25,12 @@
     />
 
   <bfg:view
+     for="repoze.bfg.interfaces.IRoutesContext"
+     view=".views.tag_view"
+     name="tags"
+    />
+
+  <bfg:view
      for=".models.IRange"
      view=".views.main_view"
      permission="view"

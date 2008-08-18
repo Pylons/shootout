@@ -7,6 +7,7 @@
     </div>
     <div tal:replace="structure toolbar" />
     <h1>${idea.title}</h1>
+    <p>Tags: <ul class="tag-list"><li tal:repeat="tag idea.tags"><a href="${app_url}/tags/${tag.name}">${tag.name}</a></li></ul></p>
     <p>By <a href="${app_url}/users/${poster.username}">${poster.name}</a>.</p>
     <p>Hits: <b>${idea.hits}</b>.</p>
     <p>Misses: <b>${idea.misses}</b>.</p>
@@ -25,7 +26,7 @@
     <div tal:condition="comments">
     <h3>Comments</h3>
     <ul>
-        <li tal:repeat="comment comments"><a href="${app_url}/ideas/${comment.idea_id}">${comment.title}</a>, by ${comment.author} (+${comment.hits}, -${comment.misses}).</li>
+        <li tal:repeat="comment comments"><span class="tags"><a tal:repeat="tag comment.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${comment.idea_id}">${comment.title}</a>, by ${comment.users.name} (+${comment.hits}, -${comment.misses}).</li>
     </ul>
     </div>
 </body>
