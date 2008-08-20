@@ -1,11 +1,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head></head>
-<body>
-    <div id="home_link">
-        <p><a href="${app_url}">Back to home page</a></p>
+     <head>
+         <title>Shootout</title>
+     </head>
+    <body>
+    <div id="menu">
+        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div id="sections">
     <h1>${idea.title}</h1>
     <p>Tags: <ul class="tag-list"><li tal:repeat="tag idea.tags"><a href="${app_url}/tags/${tag.name}">${tag.name}</a></li></ul></p>
     <p>By <a href="${app_url}/users/${poster.username}">${poster.name}</a>.</p>
@@ -28,6 +31,7 @@
     <ul>
         <li tal:repeat="comment comments"><span class="tags"><a tal:repeat="tag comment.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${comment.idea_id}">${comment.title}</a>, by ${comment.users.name} (+${comment.hits}, -${comment.misses}).</li>
     </ul>
+    </div>
     </div>
 </body>
 </html>

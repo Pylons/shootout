@@ -93,6 +93,12 @@ class Tag(object):
     def __init__(self, name):
         self.name = name
 
+class IIdeaTag(Interface):
+    pass
+
+class IdeaTag(object):
+    implements(IIdeaTag)
+
 tag_mapper = mapper(Tag, tags_table)
 
 ideas_table = Table(
@@ -130,6 +136,8 @@ idea_mapper = mapper(Idea, ideas_table, properties={
     'users':relation(User, order_by=users_table.c.user_id),
     'tags':relation(Tag, secondary=ideas_tags_table, backref='ideas'),
 })
+
+idea_tag_mapper = mapper(IdeaTag, ideas_tags_table)
 
 class IRange(Interface):
     pass

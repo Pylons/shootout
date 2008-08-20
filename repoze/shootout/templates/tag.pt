@@ -1,14 +1,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head></head>
-<body>
-    <div id="home_link">
-        <p><a href="${app_url}">Back to home page</a></p>
+     <head>
+         <title>Shootout</title>
+     </head>
+    <body>
+    <div id="menu">
+        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div id="sections">
     <h1>${tag}</h1>
     <ul>
         <li tal:repeat="idea ideas"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by ${idea.users.name} (+${idea.hits}, -${idea.misses}).</li>
     </ul>
+    </div>
 </body>
 </html>

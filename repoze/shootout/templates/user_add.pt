@@ -1,14 +1,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head></head>
-<body>
-    <div id="home_link">
-        <p><a href="${app_url}">Back to home page</a></p>
+     <head>
+         <title>Shootout</title>
+     </head>
+    <body>
+    <div id="menu">
+        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
     </div>
     <div tal:replace="structure toolbar" />
     <div id="message" tal:condition="message">
         <p>${message}</p>
     </div>
+    <div id="sections">
     <h1>Register</h1>
     <form action="register" method="post">
         <fieldset>
@@ -30,5 +33,6 @@
             <input type="submit" name="form.submitted" value="Register" />
         </fieldset>
     </form>
+    </div>
 </body>
 </html>

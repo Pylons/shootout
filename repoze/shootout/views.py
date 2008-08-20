@@ -1,14 +1,24 @@
 import sha
+import os
+import math
 
 import webob
 import formencode
 from webob.exc import HTTPFound
 
+from paste import urlparser
+
+from sqlalchemy.sql import func
+
+from repoze.bfg.wsgi import wsgiapp
 from repoze.bfg.template import render_template_to_response, render_template
 from repoze.bfg.security import authenticated_userid
 
 from repoze.shootout.models import DBSession
-from repoze.shootout.models import User, Idea, Tag
+from repoze.shootout.models import User, Idea, Tag, IdeaTag
+
+here = os.path.abspath(os.path.dirname(__file__))
+static = urlparser.StaticURLParser(os.path.join(here, 'resources', '..'))
 
 COOKIE_VOTED = 'repoze.shootout.voted'
 
@@ -26,9 +36,11 @@ def main_view(context, request):
               {'title':'Best performance','items':hitpct},
              ]
     return render_template_to_response('templates/main.pt',
+                                       username = authenticated_userid(request),
                                        app_url=request.application_url,
                                        message=message,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
                                        toplists=toplists)
 
 def idea_vote(context, request):
@@ -193,4 +205,20 @@ def toolbar_view(context, request):
     return render_template('templates/toolbar.pt',
                            app_url=request.application_url,
                            viewer_username=viewer_username)
+
+def cloud_view(context, request):
+    tag_counts = DBSession.query(Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()
+    total = sum([tag[1] for tag in tag_counts])
+    totalcounts = []
+    for tag in tag_counts:
+        weight = int((math.log(tag[1] or 1) * 4) + 10)
+        totalcounts.append((tag[0], tag[1],weight))
+    cloud = sorted(totalcounts, cmp=lambda x,y: cmp(x[0], y[0]))
+    return render_template('templates/cloud.pt',
+                           app_url=request.application_url,
+                           cloud=cloud)
+
+@wsgiapp
+def static_view(environ, start_response):
+    return static(environ, start_response)
 

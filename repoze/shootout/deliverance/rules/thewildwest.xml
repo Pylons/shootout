@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rules xmlns:xi="http://www.w3.org/2001/XInclude" xmlns="http://www.plone.org/deliverance" >
+  <xi:include href="standardrules.xml" />
+
+  <copy theme="//div[@id='menu']" content="//div[@id='menu']/*" nocontent="ignore"/>
+  <append theme="//div[@id='cloud']" content="//div[@id='cloud']/*" nocontent="ignore" />
+  <append theme="//div[@id='latest']" content="//div[@id='latest']/*" nocontent="ignore" />
+  <copy theme="//div[@id='toolbar']" content="//div[@id='toolbar']/*" nocontent="ignore" />
+  <prepend theme="//div[@id='message']" content="//div[@id='message']/*" nocontent="ignore" />
+  <prepend theme="//div[@id='sections']" content="//div[@id='sections']/*" nocontent="ignore" />
+  <copy theme="//div[@id='footer']" content="//div[@id='footer']/*" nocontent="ignore" />
+</rules>

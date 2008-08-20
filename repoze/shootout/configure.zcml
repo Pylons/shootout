@@ -73,9 +73,22 @@
 
   <bfg:view
      for=".models.IRange"
+     view=".views.cloud_view"
+     name="cloud"
+     permission="view"
+     />
+
+  <bfg:view
+     for=".models.IRange"
      view=".views.toolbar_view"
      name="toolbar"
      permission="view"
+     />
+
+  <bfg:view
+     for=".models.IRange"
+     view=".views.static_view"
+     name="resources"
      />
 
   <utility

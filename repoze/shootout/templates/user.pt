@@ -1,11 +1,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head></head>
-<body>
-    <div id="home_link">
-        <p><a href="${app_url}">Back to home page</a></p>
+     <head>
+         <title>Shootout</title>
+     </head>
+    <body>
+    <div id="menu">
+        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div id="sections">
     <h1>${user.name}</h1>
     <p>login: <b>${user.username}</b>.</p>
     <h3>Performance</h3>
@@ -14,5 +17,6 @@
     <h3>Vote history</h3>
     <p>Hits: <b>${user.delivered_hits}</b>.</p>
     <p>Misses: <b>${user.delivered_misses}</b>.</p>
+    </div>
 </body>
 </html>

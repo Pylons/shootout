@@ -1,21 +1,35 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-<head></head>
-<body>
+     <head>
+         <title>Shootout</title>
+     </head>
+    <body>
+    <div id="menu">
+        <ul><li><a href="${app_url}/about">About this demo</a></li></ul>
+    </div>
   <div id="message" tal:condition="message">
       <p>${message}</p>
   </div>
   <div tal:replace="structure toolbar" />
+  <div tal:replace="structure cloud" />
+  <div id="latest" tal:condition="toplists">
+      <ul tal:define="latest toplists[0]">
+          <li tal:repeat="idea latest['items']"><a class="idea" href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>.</li>
+      </ul>
+  </div>
+  <div id="sections">
   <h1>The Shooting Range</h1>
   <p>This is a place to discuss and vote on ideas of all kind. Want to know what others think about your idea? Give it a shot.</p>
-  <p><a href="idea_add">What's your idea?</a></p>
+  <p tal:condition="username"><a href="idea_add">What's your idea?</a></p>
+  <p tal:condition="not username">You need to <a href="${app_url}/register">register</a> to be able to post.</p>
   <div tal:condition="toplists">
       <div tal:repeat="toplist toplists">
-          <h3>${toplist['title']}</h3>
+          <h3 class="title">${toplist['title']}</h3>
           <ul>
-              <li tal:repeat="idea toplist['items']"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> (+${idea.hits}, -${idea.misses}).</li>
+              <li tal:repeat="idea toplist['items']"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a class="idea" href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>,by <a class="byline" href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> <span class="hits hits${idea.hits}">${idea.hits}</span> hits, <span class="misses misses${idea.misses}">${idea.misses}</span> misses.</li>
           </ul>
       </div>
+  </div>
   </div>
 </body>
 </html>
