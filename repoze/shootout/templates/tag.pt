@@ -5,13 +5,19 @@
      </head>
     <body>
     <div id="menu">
-        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
+        <ul>
+            <li><a href="${app_url}">Home</a></li>
+            <li><a href="${app_url}/about">About this demo</a></li>
+        </ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div tal:replace="structure cloud" />
+    <div tal:replace="structure latest" />
+    <div tal:replace="structure login_form" />
     <div id="sections">
     <h1>${tag}</h1>
     <ul>
-        <li tal:repeat="idea ideas"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by ${idea.users.name} (+${idea.hits}, -${idea.misses}).</li>
+        <li tal:repeat="idea ideas"><span class="tags"><a tal:repeat="tag idea.tags" href="${app_url}/tags/${tag.name}">${tag.name}</a></span> <a href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>, by <a class="byline" href="${app_url}/users/${idea.users.username}">${idea.users.name}</a> <span class="hits">${idea.hits}</span> hits, <span class="misses">${idea.misses}</span> misses.</li>
     </ul>
     </div>
 </body>

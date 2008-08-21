@@ -12,11 +12,8 @@
   </div>
   <div tal:replace="structure toolbar" />
   <div tal:replace="structure cloud" />
-  <div id="latest" tal:condition="toplists">
-      <ul tal:define="latest toplists[0]">
-          <li tal:repeat="idea latest['items']"><a class="idea" href="${app_url}/ideas/${idea.idea_id}">${idea.title}</a>.</li>
-      </ul>
-  </div>
+  <div tal:replace="structure latest" />
+  <div tal:replace="structure login_form" />
   <div id="sections">
   <h1>The Shooting Range</h1>
   <p>This is a place to discuss and vote on ideas of all kind. Want to know what others think about your idea? Give it a shot.</p>

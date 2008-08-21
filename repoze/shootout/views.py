@@ -41,6 +41,8 @@ def main_view(context, request):
                                        message=message,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        toplists=toplists)
 
 def idea_vote(context, request):
@@ -119,6 +121,9 @@ def idea_add(context, request):
                                        app_url=app_url,
                                        message=message,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        target=target,
                                        kind=kind,
                                        request=request)
@@ -158,6 +163,9 @@ def user_add(context, request):
     return render_template_to_response('templates/user_add.pt',
                                        message=message,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        app_url=app_url)
 
 def user_view(context, request):
@@ -166,6 +174,9 @@ def user_view(context, request):
     return render_template_to_response('templates/user.pt',
                                        user=user,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        app_url=app_url)
 
 def idea_view(context, request):
@@ -178,6 +189,9 @@ def idea_view(context, request):
     return render_template_to_response('templates/idea.pt',
                                        app_url=request.application_url,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        poster=poster,
                                        voted=voted,
                                        comments=comments,
@@ -190,7 +204,18 @@ def tag_view(context, request):
                                        tag=context.tag,
                                        app_url=request.application_url,
                                        toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request),
                                        ideas=ideas)
+
+def about_view(context, request):
+    return render_template_to_response('templates/about.pt',
+                                       app_url=request.application_url,
+                                       toolbar=toolbar_view(context,request),
+                                       cloud=cloud_view(context,request),
+                                       latest=latest_view(context,request),
+                                       login_form=login_form_view(context,request))
 
 def logout_view(context, request):
     response = webob.Response()
@@ -205,6 +230,18 @@ def toolbar_view(context, request):
     return render_template('templates/toolbar.pt',
                            app_url=request.application_url,
                            viewer_username=viewer_username)
+
+def login_form_view(context, request):
+    loggedin = authenticated_userid(request)
+    return render_template('templates/login.pt',
+                           app_url=request.application_url,
+                           loggedin=loggedin)
+
+def latest_view(context, request):
+    latest = DBSession.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.idea_id.desc()).all()[:10]
+    return render_template('templates/latest.pt',
+                           app_url=request.application_url,
+                           latest=latest)
 
 def cloud_view(context, request):
     tag_counts = DBSession.query(Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()

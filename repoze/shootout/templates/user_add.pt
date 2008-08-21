@@ -5,9 +5,15 @@
      </head>
     <body>
     <div id="menu">
-        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
+        <ul>
+            <li><a href="${app_url}">Home</a></li>
+            <li><a href="${app_url}/about">About this demo</a></li>
+        </ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div tal:replace="structure cloud" />
+    <div tal:replace="structure latest" />
+    <div tal:replace="structure login_form" />
     <div id="message" tal:condition="message">
         <p>${message}</p>
     </div>
@@ -30,7 +36,7 @@
             <label for="email">Email</label>
             <input type="text" name="email" />
             <br />
-            <input type="submit" name="form.submitted" value="Register" />
+            <input type="submit" class="submit" name="form.submitted" value="Register" />
         </fieldset>
     </form>
     </div>

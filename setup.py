@@ -22,7 +22,7 @@ if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')
 
 setup(name='repoze.shootout',
-      version='0.1',
+      version='0.5',
       description='A generic idea discussion and rating app',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

@@ -7,7 +7,6 @@
     <div id="menu">
         <ul>
             <li><a href="${app_url}">Home</a></li>
-            <li><a href="${app_url}/about">About this demo</a></li>
         </ul>
     </div>
     <div tal:replace="structure toolbar" />
@@ -15,14 +14,15 @@
     <div tal:replace="structure latest" />
     <div tal:replace="structure login_form" />
     <div id="sections">
-    <h1>${user.name}</h1>
-    <p>login: <b class="byline">${user.username}</b>.</p>
-    <h3 class="subtitle">Performance</h3>
-    <p>Hits: <b class="hits">${user.hits}</b>.</p>
-    <p>Misses: <b class="misses">${user.misses}</b>.</p>
-    <h3 class="subtitle">Vote history</h3>
-    <p>Hits: <b class="hits">${user.delivered_hits}</b>.</p>
-    <p>Misses: <b class="misses">${user.delivered_misses}</b>.</p>
+    <h1>repoze.shootout</h1>
+    <p>This is a demo application for the <a href="http://www.repoze.org/bfg">repoze.bfg</a> Python web framework.</p>
+    <p>The concepts demonstrated in the code include:</p>
+    <ul>
+        <li>Urldispatch mechanism (similar to routes).</li>
+        <li>Integration with the repoze.who authentication endware.</li>
+        <li>Integration with the deliverance filter for theming.</li>
+        <li>SQLAlchemy based models.</li>
+    </ul>
     </div>
 </body>
 </html>

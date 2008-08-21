@@ -242,6 +242,9 @@ a:link, a:visited {color: #975700;}
 	background: #FFF url(images/cbg.gif) repeat-x;
 }
 
+#sections .idea-text {
+        padding: 10px 10px;
+}
 #sections .title a {
 	text-decoration: none;
 }
@@ -401,6 +404,7 @@ a:link, a:visited {color: #975700;}
 }
 
 #toolbar {
+        padding: 10px; 5px;
         float: right;
         font-size: 90%;
 }
@@ -432,3 +436,86 @@ a:link, a:visited {color: #975700;}
         padding: 2px 3px;
         text-decoration: none;
 }
+
+.subtitle {
+        margin: 15px 5px 5px 5px;
+        font-size: 140%;
+        font-weight: normal;
+}
+
+fieldset {
+        border: none;
+        padding: 20px;
+	color: #975700;
+}
+
+label {
+        float: left;
+        width: 120px;
+        font-weight: bold;
+}
+
+input, textarea {
+        width: 180px;
+        margin-bottom: 5px;
+}
+
+textarea {
+        width: 250px;
+        height: 150px;
+}
+
+.submit {
+        margin-left: 120px;
+        margin-top: 5px;
+        width: 90px;
+        border: #f0f0f0 1px solid;
+        color: #ffffff;
+	background-color: #975700;
+}
+
+form br {
+        clear: left;
+}
+
+.tag-list {
+        font-weight: bold;
+        font-size: 120%;
+        margin: 15px;
+}
+
+.tag-list li {
+        display: inline;
+        padding: 5px;
+}
+
+.tag-list a {
+        text-decoration: none;
+}
+
+#login_form {
+}
+
+#login_form label {
+        float: left;
+}
+
+#login_form fieldset {
+        border: none;
+        padding: 20px 20px 0px 40px;
+	color: #975700;
+}
+
+#login_form input, textarea {
+        margin-bottom: 5px;
+        width: 120px;
+}
+
+.login {
+        margin-top: 5px;
+        border: #f0f0f0 1px solid;
+        color: #ffffff;
+	background-color: #975700;
+        font-size: 90%;
+}
+

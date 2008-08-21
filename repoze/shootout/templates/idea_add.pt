@@ -5,9 +5,15 @@
      </head>
 <body>
     <div id="menu">
-        <ul><li><a href="${app_url}">Back to home page</a></li></ul>
+        <ul>
+            <li><a href="${app_url}">Home</a></li>
+            <li><a href="${app_url}/about">About this demo</a></li>
+        </ul>
     </div>
     <div tal:replace="structure toolbar" />
+    <div tal:replace="structure cloud" />
+    <div tal:replace="structure latest" />
+    <div tal:replace="structure login_form" />
     <div id="message" tal:condition="message">
         <p>${message}</p>
     </div>
@@ -31,7 +37,7 @@
         <input type="text" name="tags" size="60" />
         <br />
         <input tal:condition="target" type="hidden" name="target" value="${target.idea_id}" />
-        <input type="submit" name="form.submitted" value="Shoot" />
+        <input type="submit" class="submit" name="form.submitted" value="Shoot" />
     </fieldset>
     </form>
     </div>

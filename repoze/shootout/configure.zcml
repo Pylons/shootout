@@ -80,6 +80,20 @@
 
   <bfg:view
      for=".models.IRange"
+     view=".views.latest_view"
+     name="latest"
+     permission="view"
+     />
+
+  <bfg:view
+     for=".models.IRange"
+     view=".views.login_form_view"
+     name="login_form"
+     permission="view"
+     />
+
+  <bfg:view
+     for=".models.IRange"
      view=".views.toolbar_view"
      name="toolbar"
      permission="view"
@@ -89,6 +103,12 @@
      for=".models.IRange"
      view=".views.static_view"
      name="resources"
+     />
+
+  <bfg:view
+     for=".models.IRange"
+     view=".views.about_view"
+     name="about"
      />
 
   <utility
