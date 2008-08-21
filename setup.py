@@ -13,7 +13,7 @@ requires = [
     'setuptools',
     'repoze.bfg',
     'repoze.who',
-    'deliverance',
+    'Deliverance',
     'SQLAlchemy',
     ]
 import sys
