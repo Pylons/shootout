@@ -15,6 +15,8 @@ requires = [
     'repoze.who',
     'Deliverance',
     'SQLAlchemy',
+    'zope.sqlalchemy',
+    'repoze.tm2',
     ]
 import sys
 

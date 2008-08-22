@@ -1,6 +1,10 @@
 from zope.interface import implements
 from zope.interface import Interface
 
+from zope.sqlalchemy import ZopeTransactionExtension
+
+from repoze.bfg.interfaces import IRoutesContext
+
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
 from repoze.bfg.security import Authenticated
@@ -27,10 +31,11 @@ from repoze.who.plugins.sql import default_password_compare
 
 from repoze.shootout.config import DB_STRING
 
-DBSession = scoped_session(sessionmaker(autoflush=True, autocommit=False))
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 def connection_factory():
-    return DBSession.connection().connection.connection
+    session = DBSession()
+    return session.connection().connection.connection
 
 def make_authenticator_plugin():
     query = "SELECT username,password FROM users where username = :login;"
