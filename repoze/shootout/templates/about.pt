@@ -15,7 +15,7 @@
     <div tal:replace="structure login_form" />
     <div id="sections">
     <h1>repoze.shootout</h1>
-    <p>This is a demo application for the <a href="http://www.repoze.org/bfg">repoze.bfg</a> Python web framework.</p>
+    <p>This is a demo application for the <a href="http://static.repoze.org/bfgdocs">repoze.bfg</a> Python web framework.</p>
     <p>The concepts demonstrated in the code include:</p>
     <ul>
         <li>Urldispatch mechanism (similar to routes).</li>
