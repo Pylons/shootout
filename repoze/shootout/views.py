@@ -66,7 +66,8 @@ def idea_vote(context, request):
         idea.misses=idea.misses+1
         poster.misses=poster.misses+1
         voter.delivered_misses=voter.delivered_misses+1
-    response.set_cookie("%s.%s.%s" % (COOKIE_VOTED,idea.idea_id,voter_username), vote)
+    cookie = "%s.%s.%s" % (COOKIE_VOTED,idea.idea_id,voter_username)
+    response.set_cookie(cookie.encode('utf-8'), vote)
     session.flush()
     url = "%s/ideas/%s" % (app_url,idea.idea_id)
     response.status = '301 Moved Permanently'
