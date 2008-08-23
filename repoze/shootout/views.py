@@ -84,13 +84,13 @@ def idea_add(context, request):
     app_url = request.application_url
     params = request.params
     message = params.get('message','')
+    session = DBSession()
     if params.get('form.submitted'):
         target = params.get('target', None)
         title = params.get('title')
         text = params.get('text')
         tags = params.get('tags')
         schema = AddIdea()
-        session = DBSession()
         try:
             form = schema.to_python(params)
         except formencode.validators.Invalid, why:

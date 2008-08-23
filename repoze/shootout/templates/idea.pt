@@ -31,7 +31,10 @@
         <input type="submit" class="submit" name="form.vote_miss" value="Miss" />
     </form>
     </div>
-    <p><a href="${app_url}/idea_add?target=${idea.idea_id}">Add your comment.</a></p>
+    <p><a tal:condition="viewer_username" 
+          href="${app_url}/idea_add?target=${idea.idea_id}">Add your comment.</a>
+       <span tal:condition="not viewer_username">Log in to add a comment</span>
+    </p>
     <div tal:condition="comments">
     <h3 class="subtitle">Comments</h3>
     <ul>
