@@ -148,6 +148,7 @@ def user_add(context, request):
     params = request.params
     message = params.get('message','')
     if params.get('form.submitted'):
+        headers = []
         username = params.get('username', None)
         password = params.get('password', None)
         name = params.get('name', None)
@@ -163,8 +164,16 @@ def user_add(context, request):
             password='{SHA}%s' % sha.new(password).hexdigest()
             user = User(username=username, password=password, name=name, email=email)
             session.save(user)
+            # try to autolog the user in
+            plugins = request.environ.get('repoze.who.plugins', {})
+            identifier = plugins.get('auth_tkt')
+            if identifier:
+                identity = {'repoze.who.userid': username}
+                headers = identifier.remember(request.environ, identity)
+            request.environ['repoze.who.userid'] = username
             url = "%s?message=%s" % (app_url,message)
-        return HTTPFound(location=url)
+        return HTTPFound(location=url, headers=headers)
+
     return render_template_to_response('templates/user_add.pt',
                                        message=message,
                                        toolbar=toolbar_view(context,request),
