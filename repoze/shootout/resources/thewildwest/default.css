@@ -532,3 +532,11 @@ form br {
         width: 90px;
 }
 
+#message {
+        background-color: yellow;
+        border: #000000 1px solid;
+        margin: 2px;
+        padding: 2px;
+        font-weight: bold;
+        color: brown;
+}
