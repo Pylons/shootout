@@ -5,6 +5,7 @@ import math
 import webob
 import formencode
 from webob.exc import HTTPFound
+from webob.exc import HTTPUnauthorized
 
 from paste import urlparser
 
@@ -251,9 +252,8 @@ def about_view(context, request):
                                        login_form=login_form)
 
 def logout_view(context, request):
-    response = webob.Response()
-    response.status = '401 Unauthorized'
-    return response
+    # the Location in the headers tells the form challenger to redirect
+    return HTTPUnauthorized(headers=[('Location', request.application_url)])
 
 def login_view(context, request):
     return main_view(context, request)
