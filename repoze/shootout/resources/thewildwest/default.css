@@ -446,7 +446,7 @@ a:link, a:visited {color: #975700;}
 fieldset {
         border: none;
         padding: 20px;
-	color: #975700;
+    color: #975700;
 }
 
 label {
@@ -455,14 +455,12 @@ label {
         font-weight: bold;
 }
 
-input, textarea {
-        width: 180px;
+input {
         margin-bottom: 5px;
 }
 
 textarea {
-        width: 250px;
-        height: 150px;
+        margin-bottom: 5px;
 }
 
 .submit {
@@ -471,7 +469,7 @@ textarea {
         width: 90px;
         border: #f0f0f0 1px solid;
         color: #ffffff;
-	background-color: #975700;
+    background-color: #975700;
 }
 
 form br {
@@ -503,10 +501,10 @@ form br {
 #login_form fieldset {
         border: none;
         padding: 20px 20px 0px 40px;
-	color: #975700;
+    color: #975700;
 }
 
-#login_form input, textarea {
+#login_form input{
         margin-bottom: 5px;
         width: 120px;
 }
@@ -515,7 +513,22 @@ form br {
         margin-top: 5px;
         border: #f0f0f0 1px solid;
         color: #ffffff;
-	background-color: #975700;
+    background-color: #975700;
         font-size: 90%;
+}
+
+#idea_add_form {
+}
+
+#idea_add_form input {
+        width: 250px;
+}
+
+#idea_add_form textarea {
+        width: 450px;
+}
+
+#idea_add_form .submit {
+        width: 90px;
 }
 
