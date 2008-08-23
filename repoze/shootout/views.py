@@ -119,6 +119,7 @@ def idea_add(context, request):
     target = params.get('target', None)
     kind = 'idea'
     if target is not None:
+        session = DBSession()
         target = session.query(Idea).join('users').filter(Idea.idea_id==target).one()
         kind = 'comment'
     return render_template_to_response('templates/idea_add.pt',
