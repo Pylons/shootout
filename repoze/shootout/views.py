@@ -22,20 +22,25 @@ static = urlparser.StaticURLParser(os.path.join(here, 'resources', '..'))
 
 COOKIE_VOTED = 'repoze.shootout.voted'
 
+def idea_bunch(order_by, how_many=10):
+    session = DBSession()
+    return session.query(Idea).join('users').filter(
+        Idea.target==None).order_by(order_by).all()[:how_many]
+
 def main_view(context, request):
     params = request.params
     message = params.get('message','')
-    session = DBSession()
-    hitpct = session.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.hit_percentage.desc()).all()[:10]
-    top = session.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.hits.desc()).all()[:10]
-    bottom = session.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.misses.desc()).all()[:10]
-    last10 = session.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.idea_id.desc()).all()[:10]
+    hitpct = idea_bunch(Idea.hit_percentage.desc(), 10)
+    top = idea_bunch(Idea.hits.desc(), 10)
+    bottom = idea_bunch(Idea.misses.desc(), 10)
+    last10 = idea_bunch(Idea.idea_id.desc(), 10)
     toplists=[
               {'title':'Latest shots','items':last10},
               {'title':'Most hits','items':top},
               {'title':'Most misses','items':bottom},
               {'title':'Best performance','items':hitpct},
              ]
+    login_form = login_form_view(context,request)
     return render_template_to_response('templates/main.pt',
                                        username = authenticated_userid(request),
                                        app_url=request.application_url,
@@ -43,7 +48,7 @@ def main_view(context, request):
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        toplists=toplists)
 
 def idea_vote(context, request):
@@ -98,7 +103,8 @@ def idea_add(context, request):
             url = "%s/idea_add?message=%s" % (app_url,message)
         else:
             author_id = authenticated_userid(request)
-            author = session.query(User).filter(User.username==author_id).one().user_id
+            author = session.query(User).filter(
+                User.username==author_id).one().user_id
             idea = Idea(target=target, author=author, title=title, text=text)
             session.save(idea)
             tags = tags.replace(';',' ').replace(',',' ')
@@ -120,15 +126,17 @@ def idea_add(context, request):
     kind = 'idea'
     if target is not None:
         session = DBSession()
-        target = session.query(Idea).join('users').filter(Idea.idea_id==target).one()
+        target = session.query(Idea).join('users').filter(
+            Idea.idea_id==target).one()
         kind = 'comment'
+    login_form = login_form_view(context,request)
     return render_template_to_response('templates/idea_add.pt',
                                        app_url=app_url,
                                        message=message,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        target=target,
                                        kind=kind,
                                        request=request)
@@ -141,7 +149,8 @@ class Registration(formencode.Schema):
     name = formencode.validators.String(not_empty=True)
     password = formencode.validators.String(not_empty=True)
     confirm_password = formencode.validators.String(not_empty=True)
-    chained_validators = [formencode.validators.FieldsMatch('password','confirm_password')]
+    chained_validators = [
+        formencode.validators.FieldsMatch('password','confirm_password')]
 
 def user_add(context, request):
     app_url = request.application_url
@@ -162,7 +171,8 @@ def user_add(context, request):
             url = "%s/register?message=%s" % (app_url,message)
         else:
             password='{SHA}%s' % sha.new(password).hexdigest()
-            user = User(username=username, password=password, name=name, email=email)
+            user = User(username=username, password=password, name=name,
+                        email=email)
             session.save(user)
             # try to autolog the user in
             plugins = request.environ.get('repoze.who.plugins', {})
@@ -174,24 +184,27 @@ def user_add(context, request):
             url = "%s?message=%s" % (app_url,message)
         return HTTPFound(location=url, headers=headers)
 
+    login_form = login_form_view(context, request)
+
     return render_template_to_response('templates/user_add.pt',
                                        message=message,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        app_url=app_url)
 
 def user_view(context, request):
     app_url = request.application_url
     session = DBSession()
     user = session.query(User).filter(User.username==context.user).one()
+    login_form = login_form_view(context, request)
     return render_template_to_response('templates/user.pt',
                                        user=user,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        app_url=app_url)
 
 def idea_view(context, request):
@@ -202,12 +215,13 @@ def idea_view(context, request):
     idea_cookie = '%s.%s.%s' % (COOKIE_VOTED,idea.idea_id,viewer_username)
     voted = request.cookies.get(idea_cookie, None)
     comments = session.query(Idea).filter(Idea.target==context.idea).all()
+    login_form = login_form_view(context, request)
     return render_template_to_response('templates/idea.pt',
                                        app_url=request.application_url,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        poster=poster,
                                        voted=voted,
                                        comments=comments,
@@ -217,22 +231,24 @@ def idea_view(context, request):
 def tag_view(context, request):
     session = DBSession()
     ideas = session.query(Idea).filter(Idea.tags.any(name=context.tag)).all()
+    login_form = login_form_view(context, request)
     return render_template_to_response('templates/tag.pt',
                                        tag=context.tag,
                                        app_url=request.application_url,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request),
+                                       login_form=login_form,
                                        ideas=ideas)
 
 def about_view(context, request):
+    login_form = login_form_view(context, request)
     return render_template_to_response('templates/about.pt',
                                        app_url=request.application_url,
                                        toolbar=toolbar_view(context,request),
                                        cloud=cloud_view(context,request),
                                        latest=latest_view(context,request),
-                                       login_form=login_form_view(context,request))
+                                       login_form=login_form)
 
 def logout_view(context, request):
     response = webob.Response()
@@ -256,14 +272,15 @@ def login_form_view(context, request):
 
 def latest_view(context, request):
     session = DBSession()
-    latest = session.query(Idea).join('users').filter(Idea.target==None).order_by(Idea.idea_id.desc()).all()[:10]
+    latest = idea_bunch(Idea.idea_id.desc(), 10)
     return render_template('templates/latest.pt',
                            app_url=request.application_url,
                            latest=latest)
 
 def cloud_view(context, request):
     session = DBSession()
-    tag_counts = session.query(Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()
+    tag_counts = session.query(
+        Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()
     total = sum([tag[1] for tag in tag_counts])
     totalcounts = []
     for tag in tag_counts:
