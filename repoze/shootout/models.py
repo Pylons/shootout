@@ -27,8 +27,6 @@ from sqlalchemy import create_engine
 from repoze.who.plugins.sql import SQLAuthenticatorPlugin
 from repoze.who.plugins.sql import default_password_compare
 
-from repoze.shootout.config import DB_STRING
-
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 def connection_factory():
@@ -175,8 +173,8 @@ def initialize_sql(db_string, echo=False):
     metadata.create_all(engine)
     return engine
 
-def get_root():
-    initialize_sql(DB_STRING)
+def get_root(db):
+    initialize_sql(db)
     root = RoutesMapper(fallback_get_root)
     root.connect('ideas/:idea', controller='ideas')
     root.connect('users/:user', controller='users')
