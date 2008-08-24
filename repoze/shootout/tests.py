@@ -2,7 +2,7 @@ import unittest
 import transaction
 import zope.component
 
-from zope.testing.cleanup import cleanUp # import alias
+from zope.testing.cleanup import cleanUp
 from repoze.bfg.path import caller_path
 from repoze.bfg.interfaces import ITemplate
 from repoze.bfg.interfaces import ISecurityPolicy
@@ -108,9 +108,6 @@ class ViewTests(unittest.TestCase):
         from repoze.shootout.views import idea_add
         from repoze.shootout.models import DBSession
         registerSecurityPolicy(DummySecurityPolicy('username'))
-        self._registerCommonTemplates()
-        template = DummyTemplate()
-        registerTemplate('templates/idea_add.pt', template)
         idea = self._addIdea()
         session = DBSession()
         request = DummyRequest(
@@ -126,9 +123,6 @@ class ViewTests(unittest.TestCase):
         from repoze.shootout.models import DBSession
         from repoze.shootout.models import Idea
         registerSecurityPolicy(DummySecurityPolicy('username'))
-        self._registerCommonTemplates()
-        template = DummyTemplate()
-        registerTemplate('templates/idea_add.pt', template)
         request = DummyRequest(
             params={
             'form.submitted':True,
