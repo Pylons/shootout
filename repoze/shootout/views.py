@@ -1,6 +1,7 @@
 import sha
 import os
 import math
+import urllib
 
 import webob
 import formencode
@@ -102,7 +103,7 @@ def idea_add(context, request):
         try:
             form = schema.to_python(params)
         except formencode.validators.Invalid, why:
-            message=str(why)
+            message=urllib.quote(str(why))
             url = "%s/idea_add?message=%s" % (app_url,message)
         else:
             author_id = authenticated_userid(request)
@@ -123,7 +124,7 @@ def idea_add(context, request):
                     idea.tags.append(tag)
                 else:
                     idea.tags.append(existent[0])
-            url = "%s/ideas/%s" % (app_url,idea.idea_id)
+            url = "%s/ideas/%s" % (app_url, idea.idea_id)
         return HTTPFound(location=url)
     target = params.get('target', None)
     kind = 'idea'
@@ -171,8 +172,8 @@ def user_add(context, request):
         try:
             form = schema.to_python(params)
         except formencode.validators.Invalid, why:
-            message=str(why)
-            url = "%s/register?message=%s" % (app_url,message)
+            message=urllib.quote(str(why))
+            url = "%s/register?message=%s" % (app_url, message)
         else:
             password='{SHA}%s' % sha.new(password).hexdigest()
             user = User(username=username, password=password, name=name,
