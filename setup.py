@@ -17,6 +17,7 @@ requires = [
     'SQLAlchemy',
     'zope.sqlalchemy',
     'repoze.tm2',
+    'FormEncode',
     ]
 import sys
 
