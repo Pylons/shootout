@@ -1,45 +1,71 @@
 import unittest
+from zope.testing.cleanup import cleanUp
 
 class ViewTests(unittest.TestCase):
     def setUp(self):
-        # This sets up the application registry with the registrations
-        # your application declares in its configure.zcml (including
-        # dependent registrations for repoze.bfg itself).  This is a
-        # heavy-hammer way of making sure that your tests have enough
-        # context to run properly.  But tests will run faster if you
-        # use only the registrations you need programmatically, so you
-        # should explore ways to do that rather than rely on ZCML (see
-        # the repoze.bfg tests for inspiration).
-        self._cleanup()
-        import repoze.shootout
-        import zope.configuration.xmlconfig
-        zope.configuration.xmlconfig.file('configure.zcml',
-                                          package=repoze.shootout)
+        DB_STRING = 'sqlite:///:memory'
+        from sqlalchemy import create_engine
+        engine=create_engine(DB_STRING)
+        from repoze.shootout.models import DBSession
+        from repoze.shootout.models import metadata
+        DBSession.configure(bind=engine)
+        metadata.bind = engine
+        metadata.create_all(engine)
+        cleanUp()
 
     def tearDown(self):
-        self._cleanup()
-
-    def _cleanup(self):
-        # this clears the application registry 
-        from zope.testing.cleanup import cleanUp
         cleanUp()
-        
-    def test_my_view(self):
-        from repoze.shootout.views import my_view
+
+    def _registerUtility(self, impl, iface, name=''):
+        import zope.component
+        gsm = zope.component.getGlobalSiteManager()
+        gsm.registerUtility(impl, iface, name=name)
+
+    def _registerTemplate(self, path, template=None):
+        from repoze.bfg.interfaces import ITemplate
+        from repoze.bfg.path import caller_path
+        path = caller_path(path)
+        if template is None:
+            template = DummyTemplate()
+        self._registerUtility(template, ITemplate, path)
+
+    def test_main_view(self):
+        from repoze.shootout.views import main_view
+        from repoze.bfg.interfaces import ISecurityPolicy
+        template = DummyTemplate()
+        self._registerUtility(DummySecurityPolicy(), ISecurityPolicy)
+        self._registerTemplate('templates/main.pt', template)
+        self._registerTemplate('templates/login.pt')
+        self._registerTemplate('templates/toolbar.pt')
+        self._registerTemplate('templates/cloud.pt')
+        self._registerTemplate('templates/latest.pt')
+        request = DummyRequest(params={'message':'abc'})
         context = DummyContext()
-        request = DummyRequest()
-        result = my_view(context, request)
-        self.assertEqual(result.status, '200 OK')
-        body = result.app_iter[0]
-        self.failUnless('Welcome to range' in body)
-        self.assertEqual(len(result.headerlist), 2)
-        self.assertEqual(result.headerlist[0],
-                         ('content-type', 'text/html; charset=UTF-8'))
-        self.assertEqual(result.headerlist[1], ('Content-Length',
-                                                str(len(body))))
+        main_view(context, request)
+        self.assertEqual(template.username, 'userid')
+        self.assertEqual(template.app_url, 'http://app')
+        self.assertEqual(template.message, 'abc')
+        self.assertEqual(len(template.toplists), 4)
+
+class DummySecurityPolicy:
+    userid = 'userid'
+    def authenticated_userid(self, environ):
+        return self.userid
 
 class DummyContext:
     pass
 
 class DummyRequest:
-    pass
+    application_url = 'http://app'
+    def __init__(self, environ=None, params=None):
+        if environ is None:
+            environ = {}
+        self.environ = environ
+        if params is None:
+            params = {}
+        self.params = params
+
+class DummyTemplate:
+    def template(self, **kw):
+        self.__dict__.update(kw)
+

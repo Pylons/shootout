@@ -36,21 +36,23 @@ def main_view(context, request):
     bottom = idea_bunch(Idea.misses.desc(), 10)
     last10 = idea_bunch(Idea.idea_id.desc(), 10)
     toplists=[
-              {'title':'Latest shots','items':last10},
-              {'title':'Most hits','items':top},
-              {'title':'Most misses','items':bottom},
-              {'title':'Best performance','items':hitpct},
-             ]
+        {'title':'Latest shots','items':last10},
+        {'title':'Most hits','items':top},
+        {'title':'Most misses','items':bottom},
+        {'title':'Best performance','items':hitpct},
+        ]
     login_form = login_form_view(context,request)
-    return render_template_to_response('templates/main.pt',
-                                       username = authenticated_userid(request),
-                                       app_url=request.application_url,
-                                       message=message,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       toplists=toplists)
+    return render_template_to_response(
+        'templates/main.pt',
+        username = authenticated_userid(request),
+        app_url=request.application_url,
+        message=message,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        toplists=toplists
+        )
 
 def idea_vote(context, request):
     app_url = request.application_url
@@ -131,16 +133,18 @@ def idea_add(context, request):
             Idea.idea_id==target).one()
         kind = 'comment'
     login_form = login_form_view(context,request)
-    return render_template_to_response('templates/idea_add.pt',
-                                       app_url=app_url,
-                                       message=message,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       target=target,
-                                       kind=kind,
-                                       request=request)
+    return render_template_to_response(
+        'templates/idea_add.pt',
+        app_url=app_url,
+        message=message,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        target=target,
+        kind=kind,
+        request=request
+        )
 
 class Registration(formencode.Schema):
     allow_extra_fields = True
@@ -187,26 +191,29 @@ def user_add(context, request):
 
     login_form = login_form_view(context, request)
 
-    return render_template_to_response('templates/user_add.pt',
-                                       message=message,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       app_url=app_url)
+    return render_template_to_response(
+        'templates/user_add.pt',
+        message=message,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        app_url=app_url)
 
 def user_view(context, request):
     app_url = request.application_url
     session = DBSession()
     user = session.query(User).filter(User.username==context.user).one()
     login_form = login_form_view(context, request)
-    return render_template_to_response('templates/user.pt',
-                                       user=user,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       app_url=app_url)
+    return render_template_to_response(
+        'templates/user.pt',
+        user=user,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        app_url=app_url
+        )
 
 def idea_view(context, request):
     session = DBSession()
@@ -217,39 +224,45 @@ def idea_view(context, request):
     voted = request.cookies.get(idea_cookie, None)
     comments = session.query(Idea).filter(Idea.target==context.idea).all()
     login_form = login_form_view(context, request)
-    return render_template_to_response('templates/idea.pt',
-                                       app_url=request.application_url,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       poster=poster,
-                                       voted=voted,
-                                       comments=comments,
-                                       viewer_username=viewer_username,
-                                       idea=idea)
+    return render_template_to_response(
+        'templates/idea.pt',
+        app_url=request.application_url,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        poster=poster,
+        voted=voted,
+        comments=comments,
+        viewer_username=viewer_username,
+        idea=idea
+        )
 
 def tag_view(context, request):
     session = DBSession()
     ideas = session.query(Idea).filter(Idea.tags.any(name=context.tag)).all()
     login_form = login_form_view(context, request)
-    return render_template_to_response('templates/tag.pt',
-                                       tag=context.tag,
-                                       app_url=request.application_url,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form,
-                                       ideas=ideas)
+    return render_template_to_response(
+        'templates/tag.pt',
+        tag=context.tag,
+        app_url=request.application_url,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form,
+        ideas=ideas
+        )
 
 def about_view(context, request):
     login_form = login_form_view(context, request)
-    return render_template_to_response('templates/about.pt',
-                                       app_url=request.application_url,
-                                       toolbar=toolbar_view(context,request),
-                                       cloud=cloud_view(context,request),
-                                       latest=latest_view(context,request),
-                                       login_form=login_form)
+    return render_template_to_response(
+        'templates/about.pt',
+        app_url=request.application_url,
+        toolbar=toolbar_view(context,request),
+        cloud=cloud_view(context,request),
+        latest=latest_view(context,request),
+        login_form=login_form
+        )
 
 def logout_view(context, request):
     # the Location in the headers tells the form challenger to redirect
@@ -260,22 +273,28 @@ def login_view(context, request):
 
 def toolbar_view(context, request):
     viewer_username = authenticated_userid(request)
-    return render_template('templates/toolbar.pt',
-                           app_url=request.application_url,
-                           viewer_username=viewer_username)
+    return render_template(
+        'templates/toolbar.pt',
+        app_url=request.application_url,
+        viewer_username=viewer_username
+        )
 
 def login_form_view(context, request):
     loggedin = authenticated_userid(request)
-    return render_template('templates/login.pt',
-                           app_url=request.application_url,
-                           loggedin=loggedin)
+    return render_template(
+        'templates/login.pt',
+        app_url=request.application_url,
+        loggedin=loggedin
+        )
 
 def latest_view(context, request):
     session = DBSession()
     latest = idea_bunch(Idea.idea_id.desc(), 10)
-    return render_template('templates/latest.pt',
-                           app_url=request.application_url,
-                           latest=latest)
+    return render_template(
+        'templates/latest.pt',
+        app_url=request.application_url,
+        latest=latest
+        )
 
 def cloud_view(context, request):
     session = DBSession()
@@ -287,9 +306,11 @@ def cloud_view(context, request):
         weight = int((math.log(tag[1] or 1) * 4) + 10)
         totalcounts.append((tag[0], tag[1],weight))
     cloud = sorted(totalcounts, cmp=lambda x,y: cmp(x[0], y[0]))
-    return render_template('templates/cloud.pt',
-                           app_url=request.application_url,
-                           cloud=cloud)
+    return render_template(
+        'templates/cloud.pt',
+        app_url=request.application_url,
+        cloud=cloud
+        )
 
 @wsgiapp
 def static_view(environ, start_response):
