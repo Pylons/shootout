@@ -128,7 +128,6 @@ def idea_add(context, request):
     target = params.get('target', None)
     kind = 'idea'
     if target is not None:
-        session = DBSession()
         target = session.query(Idea).join('users').filter(
             Idea.idea_id==target).one()
         kind = 'comment'

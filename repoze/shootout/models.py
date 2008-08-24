@@ -3,8 +3,6 @@ from zope.interface import Interface
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from repoze.bfg.interfaces import IRoutesContext
-
 from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
 from repoze.bfg.security import Authenticated
@@ -132,12 +130,26 @@ class Idea(object):
        self.hits = 0
        self.misses = 0
 
+hit_percentage = (
+    (ideas_table.c.hits > 0 or ideas_table.c.misses > 0) and
+    (ideas_table.c.hits /
+     (ideas_table.c.hits+ideas_table.c.misses)*100) or 0
+    )
+
+hit_percentage = column_property(hit_percentage.label('hit_percentage'))
+
+total_votes = column_property(
+    (ideas_table.c.hits + ideas_table.c.misses).label('total_votes')
+    )
+
+vote_differential = column_property(
+    (ideas_table.c.hits-ideas_table.c.misses).label('vote_differential')
+    )
+
 idea_mapper = mapper(Idea, ideas_table, properties={
-    'total_votes':column_property((ideas_table.c.hits+ideas_table.c.misses).label('total_votes')),
-    'vote_differential':column_property((ideas_table.c.hits-ideas_table.c.misses).label('vote_differential')),
-    'hit_percentage':column_property(
-        ((ideas_table.c.hits>0 or ideas_table.c.misses>0) and (ideas_table.c.hits/(ideas_table.c.hits+ideas_table.c.misses)*100) or 0).label('hit_percentage')
-    ),
+    'total_votes':total_votes,
+    'vote_differential':vote_differential,
+    'hit_percentage':hit_percentage,
     'users':relation(User, order_by=users_table.c.user_id),
     'tags':relation(Tag, secondary=ideas_tags_table, backref='ideas'),
 })
@@ -156,11 +168,15 @@ firing_range = Range()
 def fallback_get_root(environ):
     return firing_range
 
-def get_root():
-    engine=create_engine(DB_STRING)
+def initialize_sql(db_string, echo=False):
+    engine = create_engine(db_string, echo=echo)
     DBSession.configure(bind=engine)
     metadata.bind = engine
     metadata.create_all(engine)
+    return engine
+
+def get_root():
+    initialize_sql(DB_STRING)
     root = RoutesMapper(fallback_get_root)
     root.connect('ideas/:idea', controller='ideas')
     root.connect('users/:user', controller='users')
