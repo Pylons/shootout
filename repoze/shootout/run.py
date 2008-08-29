@@ -1,6 +1,6 @@
 def make_app(global_config, **kw):
     # paster app config callback
-    from repoze.bfg import make_app
+    from repoze.bfg.router import make_app
     from repoze.shootout.models import get_root
     db = kw.get('db')
     if not db:
