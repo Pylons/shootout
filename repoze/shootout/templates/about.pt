@@ -23,6 +23,8 @@
         <li>Integration with the deliverance filter for theming.</li>
         <li>SQLAlchemy based models.</li>
     </ul>
+    <p>The code can be checked out from the Subversion repository at:</p>
+    <p><a href="http://svn.repoze.org/repoze.shootout">http://svn.repoze.org/repoze.shootout</a></p>
     </div>
 </body>
 </html>
