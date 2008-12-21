@@ -1,3 +1,7 @@
+Next release
+
+  - Forwards compatibility with upcoming BFG releases.
+
 0.5
 
   - Added deliverance based theme.
