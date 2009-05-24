@@ -7,8 +7,6 @@ from repoze.bfg.security import Allow
 from repoze.bfg.security import Everyone
 from repoze.bfg.security import Authenticated
 
-from repoze.bfg.urldispatch import RoutesMapper
-
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import mapper
@@ -163,7 +161,7 @@ class Range(object):
 
 firing_range = Range()
 
-def fallback_get_root(environ):
+def get_root(environ):
     return firing_range
 
 def initialize_sql(db_string, echo=False):
@@ -173,10 +171,3 @@ def initialize_sql(db_string, echo=False):
     metadata.create_all(engine)
     return engine
 
-def get_root(db):
-    initialize_sql(db)
-    root = RoutesMapper(fallback_get_root)
-    root.connect('ideas/:idea', controller='ideas')
-    root.connect('users/:user', controller='users')
-    root.connect('tags/:tag', controller='tags')
-    return root

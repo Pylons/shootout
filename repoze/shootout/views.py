@@ -8,20 +8,22 @@ import formencode
 from webob.exc import HTTPFound
 from webob.exc import HTTPUnauthorized
 
-from paste import urlparser
-
 from sqlalchemy.sql import func
 
-from repoze.bfg.wsgi import wsgiapp
 from repoze.bfg.chameleon_zpt import render_template_to_response
 from repoze.bfg.chameleon_zpt import render_template
 from repoze.bfg.security import authenticated_userid
+from repoze.bfg.view import static
 
 from repoze.shootout.models import DBSession
-from repoze.shootout.models import User, Idea, Tag, IdeaTag
+from repoze.shootout.models import User
+from repoze.shootout.models import Idea
+from repoze.shootout.models import Tag
+from repoze.shootout.models import IdeaTag
 
-here = os.path.abspath(os.path.dirname(__file__))
-static = urlparser.StaticURLParser(os.path.join(here, 'resources', '..'))
+resources = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), 'resources')
+static_view = static(resources)
 
 COOKIE_VOTED = 'repoze.shootout.voted'
 
@@ -111,7 +113,7 @@ def idea_add(context, request):
             author = session.query(User).filter(
                 User.username==author_id).one().user_id
             idea = Idea(target=target, author=author, title=title, text=text)
-            session.save(idea)
+            session.add(idea)
             tags = tags.replace(';',' ').replace(',',' ')
             tags = [tag.lower() for tag in tags.split()]
             tags = set(tags)
@@ -121,7 +123,7 @@ def idea_add(context, request):
                 existent = session.query(Tag).filter(Tag.name==tagname).all()
                 if not existent:
                     tag = Tag(name=tagname)
-                    session.save(tag)
+                    session.add(tag)
                     idea.tags.append(tag)
                 else:
                     idea.tags.append(existent[0])
@@ -179,7 +181,7 @@ def user_add(context, request):
             password='{SHA}%s' % sha.new(password).hexdigest()
             user = User(username=username, password=password, name=name,
                         email=email)
-            session.save(user)
+            session.add(user)
             # try to autolog the user in
             plugins = request.environ.get('repoze.who.plugins', {})
             identifier = plugins.get('auth_tkt')
@@ -312,8 +314,4 @@ def cloud_view(context, request):
         app_url=request.application_url,
         cloud=cloud
         )
-
-@wsgiapp
-def static_view(environ, start_response):
-    return static(environ, start_response)
 

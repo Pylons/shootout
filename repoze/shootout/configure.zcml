@@ -1,112 +1,110 @@
-<configure xmlns="http://namespaces.zope.org/zope"
-	   xmlns:bfg="http://namespaces.repoze.org/bfg"
+<configure xmlns="http://namespaces.repoze.org/bfg"
 	   i18n_domain="repoze.bfg">
 
-  <!-- this must be included for the view declarations to work -->
-  <include package="zope.component" file="meta.zcml"/>
   <include package="repoze.bfg.includes" />
 
-  <bfg:view
+  <route
+     name="idea"
+     path="ideas/:idea"
+     view=".views.idea_view"
+     />
+
+  <route
+     name="user"
+     path="users/:user"
+     view=".views.user_view"
+    />
+
+  <route
+     name="tag"
+     path="tags/:tag"
+     view=".views.tag_view"
+    />
+
+
+  <view
      for=".models.IRange"
      view=".views.user_view"
      name="user_view"
      permission="view"
      />
 
-  <bfg:view
-     for="repoze.bfg.interfaces.IRoutesContext"
-     view=".views.idea_view"
-     name="ideas"
-    />
-
-  <bfg:view
-     for="repoze.bfg.interfaces.IRoutesContext"
-     view=".views.user_view"
-     name="users"
-    />
-
-  <bfg:view
-     for="repoze.bfg.interfaces.IRoutesContext"
-     view=".views.tag_view"
-     name="tags"
-    />
-
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.main_view"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.user_add"
      name="register"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.idea_add"
      name="idea_add"
      permission="post"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.idea_vote"
      name="idea_vote"
      permission="post"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.logout_view"
      name="logout"
      permission="post"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.login_view"
      name="login"
      permission="post"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.cloud_view"
      name="cloud"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.latest_view"
      name="latest"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.login_form_view"
      name="login_form"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.toolbar_view"
      name="toolbar"
      permission="view"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.static_view"
      name="resources"
      />
 
-  <bfg:view
+  <view
      for=".models.IRange"
      view=".views.about_view"
      name="about"

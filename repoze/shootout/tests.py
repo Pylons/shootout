@@ -27,7 +27,7 @@ class ViewTests(unittest.TestCase):
         session = DBSession()
         user = User(username=username, password='password', name='name',
                     email='email')
-        session.save(user)
+        session.add(user)
         session.flush()
         return user
 
