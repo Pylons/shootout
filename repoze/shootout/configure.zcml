@@ -7,12 +7,14 @@
      name="idea"
      path="ideas/:idea"
      view=".views.idea_view"
+     factory=".models.URLDispatchRootFactory"
      />
 
   <route
      name="user"
      path="users/:user"
      view=".views.user_view"
+     factory=".models.URLDispatchRootFactory"
     />
 
   <route
@@ -20,7 +22,6 @@
      path="tags/:tag"
      view=".views.tag_view"
     />
-
 
   <view
      for=".models.IRange"

@@ -159,6 +159,10 @@ class Range(object):
     implements(IRange)
     __acl__ = [ (Allow, Everyone, 'view'), (Allow, Authenticated, 'post')]
 
+class URLDispatchRootFactory:
+    def __init__(self, environ):
+        self.__dict__.update(environ['bfg.routes.matchdict'])
+
 firing_range = Range()
 
 def get_root(environ):
