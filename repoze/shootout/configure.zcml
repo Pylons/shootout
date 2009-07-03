@@ -111,9 +111,9 @@
      name="about"
      />
 
-  <utility
-      provides="repoze.bfg.interfaces.ISecurityPolicy"
-      factory="repoze.bfg.security.RemoteUserACLSecurityPolicy"
-  />
+  <remoteuserauthenticationpolicy
+    environ_key="REMOTE_USER"/>
+
+  <aclauthorizationpolicy/>
 
 </configure>
