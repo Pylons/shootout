@@ -1,13 +1,21 @@
 Next release
+============
 
-  - Forwards compatibility with upcoming BFG releases.
+- Forwards compatibility with upcoming BFG releases.
 
+- Explicit BFG 1.1 compatibility in tests.
+
+- Remove ez_setup.py.
 0.5
+===
 
-  - Added deliverance based theme.
-  - Incorporated tagging and a tag cloud.
-  - Various bug fixes.
+- Added deliverance based theme.
+
+- Incorporated tagging and a tag cloud.
+
+- Various bug fixes.
 
 0.1
+===
 
-  Initial version
+- Initial version

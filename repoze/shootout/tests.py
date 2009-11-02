@@ -1,6 +1,5 @@
 import unittest
 
-from zope.testing.cleanup import cleanUp
 from repoze.bfg import testing
 
 class ViewTests(unittest.TestCase):
@@ -8,12 +7,12 @@ class ViewTests(unittest.TestCase):
         DB_STRING = 'sqlite:///:memory:'
         from repoze.shootout.models import initialize_sql
         self.engine = initialize_sql(DB_STRING, echo=False)
-        cleanUp()
+        testing.cleanUp()
 
     def tearDown(self):
         import transaction
         transaction.abort()
-        cleanUp()
+        testing.cleanUp()
 
     def _registerCommonTemplates(self):
         testing.registerDummyRenderer('templates/login.pt')
