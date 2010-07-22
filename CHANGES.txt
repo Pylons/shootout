@@ -1,11 +1,12 @@
 Next release
 ============
 
-- Forwards compatibility with upcoming BFG releases.
+- Forwards compatibility with BFG 1.3.
 
 - Explicit BFG 1.1 compatibility in tests.
 
 - Remove ez_setup.py.
+
 0.5
 ===
 

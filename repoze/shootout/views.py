@@ -1,4 +1,9 @@
-import sha
+try:
+    import hashlib
+    sha1 = hashlib.sha1
+except ImportError:
+    import sha
+    sha1 = sha.new
 import os
 import math
 import urllib
@@ -178,7 +183,7 @@ def user_add(context, request):
             message=urllib.quote(str(why))
             url = "%s/register?message=%s" % (app_url, message)
         else:
-            password='{SHA}%s' % sha.new(password).hexdigest()
+            password='{SHA}%s' % sha1(password).hexdigest()
             user = User(username=username, password=password, name=name,
                         email=email)
             session.add(user)
