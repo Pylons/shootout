@@ -10,6 +10,7 @@ requires = [
     'setuptools',
     'repoze.bfg',
     'repoze.who',
+    'repoze.who.deprecatedplugins',
     'Deliverance <= 0.2',
     'SQLAlchemy < 0.6a',
     'zope.sqlalchemy',
