@@ -14,8 +14,8 @@
     <div tal:replace="structure latest" />
     <div tal:replace="structure login_form" />
     <div id="sections">
-    <h1>repoze.shootout</h1>
-    <p>This is a demo application for the <a href="http://static.repoze.org/bfgdocs">repoze.bfg</a> Python web framework.</p>
+    <h1>shootout</h1>
+    <p>This is a demo application for the <a href="http://docs.pylonshq.com">Pyramid</a> Python web framework.</p>
     <p>The concepts demonstrated in the code include:</p>
     <ul>
         <li>Urldispatch mechanism (similar to routes).</li>
@@ -23,8 +23,8 @@
         <li>Integration with the deliverance filter for theming.</li>
         <li>SQLAlchemy based models.</li>
     </ul>
-    <p>The code can be checked out from the Subversion repository at:</p>
-    <p><a href="http://svn.repoze.org/repoze.shootout">http://svn.repoze.org/repoze.shootout</a></p>
+    <p>The code can be checked out from the version control repository at:</p>
+    <p><a href="https://github.com/Pylons/shootout">https://github.com/Pylons/shootout</a></p>
     </div>
 </body>
 </html>
