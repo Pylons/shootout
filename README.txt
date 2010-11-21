@@ -1,8 +1,8 @@
-repoze.shootout
-===============
+shootout
+========
 
-repoze.shootout is a demo app for the repoze.bfg web framework.  The
-concepts demonstrated in the code include:
+shootout is a demo app for the Pyramid web framework.  The concepts
+demonstrated in the code include:
 
 - Urldispatch mechanism (similar to routes).
 
@@ -15,8 +15,7 @@ concepts demonstrated in the code include:
 Library Requirements
 --------------------
 
-repoze.shootout requires a C compiler, SQLite3, and libxml2 and
-libxslt bindings.
+shootout requires a C compiler, SQLite3, and libxml2 and libxslt bindings.
 
 On a Debian system, these imply: build-essentials, libsqlite3-dev,
 libxml2-dev, libxslt-dev.
@@ -24,15 +23,15 @@ libxml2-dev, libxslt-dev.
 Installing and Running
 ----------------------
 
-#. virtualenv --no-site-packages shootout
+#. virtualenv --no-site-packages env
+
+#. cd env
+
+#. git clone git@github.com:Pylons/shootout.git
 
 #. cd shootout
 
-#. svn co http://svn.repoze.org/repoze.shootout/trunk/ repoze.shootout
-
-#. cd repoze.shootout
-
 #. ../bin/python setup.py develop
 
-#. ../bin/paster serve shootout.ini
+#. ../bin/paster serve development.ini
 

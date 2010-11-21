@@ -7,7 +7,7 @@ def make_app(global_config, **kw):
         raise ValueError('shootout.ini requires a db section '
                          '(the SQLAlchemy db URI)')
     initialize_sql(db)
-    from repoze.bfg.configuration import Configurator
+    from pyramid.configuration import Configurator
     config = Configurator(root_factory=get_root)
     config.begin()
     config.load_zcml('repoze.shootout:configure.zcml')

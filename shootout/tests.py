@@ -1,11 +1,11 @@
 import unittest
 
-from repoze.bfg import testing
+from pyramid import testing
 
 class ViewTests(unittest.TestCase):
     def setUp(self):
         DB_STRING = 'sqlite:///:memory:'
-        from repoze.shootout.models import initialize_sql
+        from shootout.models import initialize_sql
         self.engine = initialize_sql(DB_STRING, echo=False)
         testing.cleanUp()
 
@@ -21,8 +21,8 @@ class ViewTests(unittest.TestCase):
         testing.registerDummyRenderer('templates/latest.pt')
 
     def _addUser(self, username='username'):
-        from repoze.shootout.models import User
-        from repoze.shootout.models import DBSession
+        from shootout.models import User
+        from shootout.models import DBSession
         session = DBSession()
         user = User(username=username, password='password', name='name',
                     email='email')
@@ -31,8 +31,8 @@ class ViewTests(unittest.TestCase):
         return user
 
     def _addIdea(self, target=None):
-        from repoze.shootout.models import Idea
-        from repoze.shootout.models import DBSession
+        from shootout.models import Idea
+        from shootout.models import DBSession
         session = DBSession()
         user = self._addUser()
         idea = Idea(target=target, author=user.user_id, title='title',
@@ -42,7 +42,7 @@ class ViewTests(unittest.TestCase):
         return idea
         
     def test_main_view(self):
-        from repoze.shootout.views import main_view
+        from shootout.views import main_view
         testing.registerDummySecurityPolicy('username')
         self._registerCommonTemplates()
         renderer = testing.registerDummyRenderer('templates/main.pt')
@@ -55,7 +55,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(len(renderer.toplists), 4)
 
     def test_idea_add_nosubmit(self):
-        from repoze.shootout.views import idea_add
+        from shootout.views import idea_add
         testing.registerDummySecurityPolicy('username')
         self._registerCommonTemplates()
         renderer = testing.registerDummyRenderer('templates/idea_add.pt')
@@ -68,13 +68,12 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(renderer.kind, 'idea')
         
     def test_idea_add_nosubmit_comment(self):
-        from repoze.shootout.views import idea_add
-        from repoze.shootout.models import DBSession
+        from shootout.views import idea_add
+        from shootout.models import DBSession
         testing.registerDummySecurityPolicy('username')
         self._registerCommonTemplates()
         renderer = testing.registerDummyRenderer('templates/idea_add.pt')
         idea = self._addIdea()
-        session = DBSession()
         request = testing.DummyRequest(
             params={'message':'abc', 'target':idea.idea_id})
         context = testing.DummyModel()
@@ -85,7 +84,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(renderer.kind, 'comment')
 
     def test_idea_add_nosubmit_idea(self):
-        from repoze.shootout.views import idea_add
+        from shootout.views import idea_add
         testing.registerDummySecurityPolicy('username')
         self._registerCommonTemplates()
         renderer = testing.registerDummyRenderer('templates/idea_add.pt')
@@ -99,11 +98,10 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(renderer.kind, 'idea')
 
     def test_idea_add_submit_schema_fail_empty_params(self):
-        from repoze.shootout.views import idea_add
-        from repoze.shootout.models import DBSession
+        from shootout.views import idea_add
+        from shootout.models import DBSession
         testing.registerDummySecurityPolicy('username')
         idea = self._addIdea()
-        session = DBSession()
         request = testing.DummyRequest(
             params={'target':idea.idea_id, 'form.submitted':True}
             )
@@ -113,9 +111,9 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(response.location, 'http://example.com/idea_add?message=tags%3A%20Missing%20value%0Atext%3A%20Missing%20value%0Atitle%3A%20Missing%20value')
 
     def test_idea_add_submit_schema_succeed(self):
-        from repoze.shootout.views import idea_add
-        from repoze.shootout.models import DBSession
-        from repoze.shootout.models import Idea
+        from shootout.views import idea_add
+        from shootout.models import DBSession
+        from shootout.models import Idea
         testing.registerDummySecurityPolicy('username')
         request = testing.DummyRequest(
             params={

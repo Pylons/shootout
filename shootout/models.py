@@ -3,9 +3,9 @@ from zope.interface import Interface
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from repoze.bfg.security import Allow
-from repoze.bfg.security import Everyone
-from repoze.bfg.security import Authenticated
+from pyramid.security import Allow
+from pyramid.security import Everyone
+from pyramid.security import Authenticated
 
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker

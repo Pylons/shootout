@@ -8,7 +8,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'setuptools',
-    'repoze.bfg',
+    'pyramid',
     'repoze.who',
     'repoze.who.deprecatedplugins',
     'Deliverance <= 0.2',
@@ -22,12 +22,12 @@ import sys
 if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')
 
-setup(name='repoze.shootout',
-      version='0.6dev',
-      description='A generic idea discussion and rating app',
+setup(name='shootout',
+      version='0.0',
+      description='A generic idea discussion and rating app (Pyramid sample)',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Framework :: Pylons",
         "Intended Audience :: Developers",
         "Programming Language :: Python",
         "Topic :: Internet :: WWW/HTTP",
@@ -37,19 +37,18 @@ setup(name='repoze.shootout',
         ],
       author='Carlos de la Guardia',
       author_email='cguardia@yahoo.com',
-      url='http://www.repoze.org',
+      url='http://pylons-devel@googlegroups.com',
       license="BSD-derived (http://www.repoze.org/LICENSE.txt)",
-      keywords='web wsgi bfg zope',
+      keywords='web wsgi pyramid pylons',
       packages=find_packages(),
       include_package_data=True,
-      namespace_packages=['repoze'],
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="repoze.shootout.tests",
+      test_suite="shootout.tests",
       entry_points = """\
       [paste.app_factory]
-      make_app = repoze.shootout.run:make_app
+      main = shootout:main
       """
       )
 

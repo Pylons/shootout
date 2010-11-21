@@ -1,22 +1,4 @@
 Next release
 ============
 
-- Forwards compatibility with BFG 1.3.
-
-- Explicit BFG 1.1 compatibility in tests.
-
-- Remove ez_setup.py.
-
-0.5
-===
-
-- Added deliverance based theme.
-
-- Incorporated tagging and a tag cloud.
-
-- Various bug fixes.
-
-0.1
-===
-
-- Initial version
+- Forked from repoze.shootout 0.6dev

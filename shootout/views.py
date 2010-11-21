@@ -15,22 +15,22 @@ from webob.exc import HTTPUnauthorized
 
 from sqlalchemy.sql import func
 
-from repoze.bfg.chameleon_zpt import render_template_to_response
-from repoze.bfg.chameleon_zpt import render_template
-from repoze.bfg.security import authenticated_userid
-from repoze.bfg.view import static
+from pyramid.renderers import render_to_response
+from pyramid.renderers import render
+from pyramid.security import authenticated_userid
+from pyramid.view import static
 
-from repoze.shootout.models import DBSession
-from repoze.shootout.models import User
-from repoze.shootout.models import Idea
-from repoze.shootout.models import Tag
-from repoze.shootout.models import IdeaTag
+from shootout.models import DBSession
+from shootout.models import User
+from shootout.models import Idea
+from shootout.models import Tag
+from shootout.models import IdeaTag
 
 resources = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), 'resources')
 static_view = static(resources)
 
-COOKIE_VOTED = 'repoze.shootout.voted'
+COOKIE_VOTED = 'shootout.voted'
 
 def idea_bunch(order_by, how_many=10):
     session = DBSession()
@@ -51,16 +51,19 @@ def main_view(context, request):
         {'title':'Best performance','items':hitpct},
         ]
     login_form = login_form_view(context,request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/main.pt',
-        username = authenticated_userid(request),
-        app_url=request.application_url,
-        message=message,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        toplists=toplists
+        dict(
+            username = authenticated_userid(request),
+            app_url=request.application_url,
+            message=message,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            toplists=toplists
+            ),
+        request,
         )
 
 def idea_vote(context, request):
@@ -109,7 +112,7 @@ def idea_add(context, request):
         tags = params.get('tags')
         schema = AddIdea()
         try:
-            form = schema.to_python(params)
+            schema.to_python(params)
         except formencode.validators.Invalid, why:
             message=urllib.quote(str(why))
             url = "%s/idea_add?message=%s" % (app_url,message)
@@ -141,17 +144,20 @@ def idea_add(context, request):
             Idea.idea_id==target).one()
         kind = 'comment'
     login_form = login_form_view(context,request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/idea_add.pt',
-        app_url=app_url,
-        message=message,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        target=target,
-        kind=kind,
-        request=request
+        dict(
+            app_url=app_url,
+            message=message,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            target=target,
+            kind=kind,
+            request=request,
+            ),
+        request,
         )
 
 class Registration(formencode.Schema):
@@ -178,7 +184,7 @@ def user_add(context, request):
         schema = Registration()
         session = DBSession()
         try:
-            form = schema.to_python(params)
+            schema.to_python(params)
         except formencode.validators.Invalid, why:
             message=urllib.quote(str(why))
             url = "%s/register?message=%s" % (app_url, message)
@@ -199,28 +205,35 @@ def user_add(context, request):
 
     login_form = login_form_view(context, request)
 
-    return render_template_to_response(
+    return render_to_response(
         'templates/user_add.pt',
-        message=message,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        app_url=app_url)
+        dict(
+            message=message,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            app_url=app_url,
+            ),
+        request,
+        )
 
 def user_view(context, request):
     app_url = request.application_url
     session = DBSession()
     user = session.query(User).filter(User.username==context.user).one()
     login_form = login_form_view(context, request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/user.pt',
-        user=user,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        app_url=app_url
+        dict(
+            user=user,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            app_url=app_url,
+            ),
+        request,
         )
 
 def idea_view(context, request):
@@ -232,44 +245,53 @@ def idea_view(context, request):
     voted = request.cookies.get(idea_cookie, None)
     comments = session.query(Idea).filter(Idea.target==context.idea).all()
     login_form = login_form_view(context, request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/idea.pt',
-        app_url=request.application_url,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        poster=poster,
-        voted=voted,
-        comments=comments,
-        viewer_username=viewer_username,
-        idea=idea
+        dict(
+            app_url=request.application_url,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            poster=poster,
+            voted=voted,
+            comments=comments,
+            viewer_username=viewer_username,
+            idea=idea,
+            ),
+        request,
         )
 
 def tag_view(context, request):
     session = DBSession()
     ideas = session.query(Idea).filter(Idea.tags.any(name=context.tag)).all()
     login_form = login_form_view(context, request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/tag.pt',
-        tag=context.tag,
-        app_url=request.application_url,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form,
-        ideas=ideas
+        dict(
+            tag=context.tag,
+            app_url=request.application_url,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            ideas=ideas,
+            ),
+        request,
         )
 
 def about_view(context, request):
     login_form = login_form_view(context, request)
-    return render_template_to_response(
+    return render_to_response(
         'templates/about.pt',
-        app_url=request.application_url,
-        toolbar=toolbar_view(context,request),
-        cloud=cloud_view(context,request),
-        latest=latest_view(context,request),
-        login_form=login_form
+        dict(
+            app_url=request.application_url,
+            toolbar=toolbar_view(context,request),
+            cloud=cloud_view(context,request),
+            latest=latest_view(context,request),
+            login_form=login_form,
+            ),
+        request,
         )
 
 def logout_view(context, request):
@@ -281,42 +303,52 @@ def login_view(context, request):
 
 def toolbar_view(context, request):
     viewer_username = authenticated_userid(request)
-    return render_template(
+    return render(
         'templates/toolbar.pt',
-        app_url=request.application_url,
-        viewer_username=viewer_username
+        dict(
+            app_url=request.application_url,
+            viewer_username=viewer_username,
+            ),
+        request,
         )
 
 def login_form_view(context, request):
     loggedin = authenticated_userid(request)
-    return render_template(
+    return render(
         'templates/login.pt',
-        app_url=request.application_url,
-        loggedin=loggedin
+        dict(
+            app_url=request.application_url,
+            loggedin=loggedin,
+            ),
+        request,
         )
 
 def latest_view(context, request):
-    session = DBSession()
     latest = idea_bunch(Idea.idea_id.desc(), 10)
-    return render_template(
+    return render(
         'templates/latest.pt',
-        app_url=request.application_url,
-        latest=latest
+        dict(
+            app_url=request.application_url,
+            latest=latest,
+            ),
+        request,
         )
 
 def cloud_view(context, request):
     session = DBSession()
     tag_counts = session.query(
         Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()
-    total = sum([tag[1] for tag in tag_counts])
     totalcounts = []
     for tag in tag_counts:
         weight = int((math.log(tag[1] or 1) * 4) + 10)
         totalcounts.append((tag[0], tag[1],weight))
     cloud = sorted(totalcounts, cmp=lambda x,y: cmp(x[0], y[0]))
-    return render_template(
+    return render(
         'templates/cloud.pt',
-        app_url=request.application_url,
-        cloud=cloud
+        dict(
+            app_url=request.application_url,
+            cloud=cloud
+            ),
+        request,
         )
 
