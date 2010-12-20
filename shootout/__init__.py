@@ -8,7 +8,7 @@ def main(global_config, **settings):
         raise ValueError('shootout requires a db section '
                          '(the SQLAlchemy db URI)')
     initialize_sql(db)
-    from pyramid.configuration import Configurator
+    from pyramid.config import Configurator
     config = Configurator(root_factory=get_root)
     config.load_zcml('shootout:configure.zcml')
     return config.make_wsgi_app()
