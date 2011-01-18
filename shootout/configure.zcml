@@ -1,7 +1,7 @@
 <configure xmlns="http://pylonshq.com/pyramid"
 	   i18n_domain="repoze.bfg">
 
-  <include package="pyramid.includes" />
+  <include package="pyramid_zcml" />
 
   <route
      name="idea"

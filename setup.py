@@ -7,8 +7,9 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'setuptools>=1.0a6',
-    'pyramid',
+    'setuptools',
+    'pyramid>=1.0a10',
+    'pyramid_zcml',
     'repoze.who',
     'repoze.who.deprecatedplugins',
     'Deliverance <= 0.2',

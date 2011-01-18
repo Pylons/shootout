@@ -10,6 +10,7 @@ def main(global_config, **settings):
     initialize_sql(db)
     from pyramid.config import Configurator
     config = Configurator(root_factory=get_root)
+    config.include('pyramid_zcml')
     config.load_zcml('shootout:configure.zcml')
     return config.make_wsgi_app()
 
