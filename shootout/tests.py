@@ -7,18 +7,18 @@ class ViewTests(unittest.TestCase):
         DB_STRING = 'sqlite:///:memory:'
         from shootout.models import initialize_sql
         self.engine = initialize_sql(DB_STRING, echo=False)
-        testing.cleanUp()
+        self.config = testing.setUp()
 
     def tearDown(self):
         import transaction
         transaction.abort()
-        testing.cleanUp()
+        testing.tearDown()
 
     def _registerCommonTemplates(self):
-        testing.registerDummyRenderer('templates/login.pt')
-        testing.registerDummyRenderer('templates/toolbar.pt')
-        testing.registerDummyRenderer('templates/cloud.pt')
-        testing.registerDummyRenderer('templates/latest.pt')
+        self.config.testing_add_renderer('templates/login.pt')
+        self.config.testing_add_renderer('templates/toolbar.pt')
+        self.config.testing_add_renderer('templates/cloud.pt')
+        self.config.testing_add_renderer('templates/latest.pt')
 
     def _addUser(self, username='username'):
         from shootout.models import User
@@ -43,9 +43,9 @@ class ViewTests(unittest.TestCase):
         
     def test_main_view(self):
         from shootout.views import main_view
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         self._registerCommonTemplates()
-        renderer = testing.registerDummyRenderer('templates/main.pt')
+        renderer = self.config.testing_add_renderer('templates/main.pt')
         request = testing.DummyRequest(params={'message':'abc'})
         context = testing.DummyModel()
         main_view(context, request)
@@ -56,9 +56,9 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_nosubmit(self):
         from shootout.views import idea_add
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         self._registerCommonTemplates()
-        renderer = testing.registerDummyRenderer('templates/idea_add.pt')
+        renderer = self.config.testing_add_renderer('templates/idea_add.pt')
         request = testing.DummyRequest(params={'message':'abc'})
         context = testing.DummyModel()
         idea_add(context, request)
@@ -69,10 +69,9 @@ class ViewTests(unittest.TestCase):
         
     def test_idea_add_nosubmit_comment(self):
         from shootout.views import idea_add
-        from shootout.models import DBSession
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         self._registerCommonTemplates()
-        renderer = testing.registerDummyRenderer('templates/idea_add.pt')
+        renderer = self.config.testing_add_renderer('templates/idea_add.pt')
         idea = self._addIdea()
         request = testing.DummyRequest(
             params={'message':'abc', 'target':idea.idea_id})
@@ -85,9 +84,9 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_nosubmit_idea(self):
         from shootout.views import idea_add
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         self._registerCommonTemplates()
-        renderer = testing.registerDummyRenderer('templates/idea_add.pt')
+        renderer = self.config.testing_add_renderer('templates/idea_add.pt')
         request = testing.DummyRequest(
             params={'message':'abc', 'target':None})
         context = testing.DummyModel()
@@ -99,8 +98,7 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
-        from shootout.models import DBSession
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         idea = self._addIdea()
         request = testing.DummyRequest(
             params={'target':idea.idea_id, 'form.submitted':True}
@@ -114,7 +112,7 @@ class ViewTests(unittest.TestCase):
         from shootout.views import idea_add
         from shootout.models import DBSession
         from shootout.models import Idea
-        testing.registerDummySecurityPolicy('username')
+        self.config.testing_securitypolicy('username')
         request = testing.DummyRequest(
             params={
             'form.submitted':True,
