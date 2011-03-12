@@ -123,18 +123,17 @@ class AddIdea(formencode.Schema):
 
 
 def idea_add(request):
-    post = request.POST
-    message = post.get('message','')
+    post_data = request.POST
     session = DBSession()
 
-    if post.get('form.submitted'):
-        target = post.get('target', None)
-        title = post.get('title')
-        text = post.get('text')
-        tags_string = post.get('tags')
+    if post_data.get('form.submitted'):
+        target = post_data.get('target', None)
+        title = post_data.get('title')
+        text = post_data.get('text')
+        tags_string = post_data.get('tags')
         schema = AddIdea()
         try:
-            schema.to_python(post)
+            schema.to_python(post_data)
         except formencode.validators.Invalid, why:
             request.session.flash(message)
         else:
@@ -150,7 +149,7 @@ def idea_add(request):
 
         return HTTPFound(location=redirect_url)
 
-    target = params.get('target', None)
+    target = post_data.get('target', None)
     kind = 'idea'
     if target is not None:
         target = session.query(Idea).join('author').filter(

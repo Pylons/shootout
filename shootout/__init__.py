@@ -30,7 +30,7 @@ def main(global_config, **settings):
     config.add_route('idea', '/ideas/{idea_id}',
                      view='shootout.views.idea_view',
                      view_renderer='templages/idea.pt')
-    config.add_route('user', '/users/{user}',
+    config.add_route('user', '/users/{username}',
                      view='shootout.views.user_view',
                      view_renderer='templates/user.pt')
     config.add_route('tag', '/tags/{tag_name}',
@@ -48,6 +48,8 @@ def main(global_config, **settings):
                      view_renderer='templates/user_add.pt')
     config.add_route('login', '/login',
                      view='shootout.views.login_view')
+    config.add_route('logout', '/logout',
+                     view='shootout.views.logout_view')
     config.add_route('about', '/about',
                      view='shootout.views.about_view',
                      view_renderer='templates/about.pt')
