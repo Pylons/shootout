@@ -114,6 +114,7 @@ def user_add(request):
         'login_form': login_form,
     }
 
+
 class AddIdea(formencode.Schema):
     allow_extra_fields = True
     title = formencode.validators.String(not_empty=True)
