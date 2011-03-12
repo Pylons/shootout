@@ -8,14 +8,13 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'setuptools'
+    'setuptools',
     'pyramid',
     'SQLAlchemy',
     'transaction',
     'repoze.tm2>=1.0b1', # default_commit_veto
     'zope.sqlalchemy',
     'WebError',
-    'pyramid_who',
     'formencode',
     ]
 
@@ -39,7 +38,7 @@ setup(name='shootout',
       author="Carlos de la Guardia, Lukasz Fidosz",
       author_email="cguardia@yahoo.com, virhilo@gmail.com",
       url='http://pylons-devel@googlegroups.com',
-      license="BSD-derived (http://www.repoze.org/LICENSE.txt)
+      license="BSD-derived (http://www.repoze.org/LICENSE.txt)",
       keywords='web wsgi pyramid pylons example',
       packages=find_packages(),
       include_package_data=True,

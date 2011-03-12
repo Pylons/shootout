@@ -1,6 +1,9 @@
 *.egg
 *.egg-info
 *.pyc
+*.pyo
+*.db
+*.sqlite
 *$py.class
 *.pt.py
 *.txt.py

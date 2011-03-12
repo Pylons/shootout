@@ -115,7 +115,13 @@ class Tag(Base):
             tags.append(tag)
 
         return tags
-            
+
+
+voted_users = Table('ideas_votes', Base.metadata,
+    Column('idea_id', Integer, ForeignKey('ideas.idea_id')),
+    Column('user_id', Integer, ForeignKey('users.user_id'))
+)
+
 
 class Idea(Base):
     __tablename__ = 'ideas'
@@ -129,6 +135,7 @@ class Idea(Base):
     hits = Column(Integer, default=0)
     misses = Column(Integer, default=0)
     tags = relation(Tag, secondary=ideas_tags, backref='ideas')
+    voted_users = relation(User, secondary=voted_users, backref='voted_ideas')
 
     hit_percentage = (hits / (hits + misses) * 100)
     hit_percentage = column_property(
@@ -153,6 +160,7 @@ class Idea(Base):
     def ideas_bunch(cls, order_by, how_many=10):
         q = DBSession.query(cls).join('author').filter(cls.target==None)
         return q.order_by(order_by)[:how_many]
+
 
 class RootFactory(object):
     __acl__ = [

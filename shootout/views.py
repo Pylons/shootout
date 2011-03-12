@@ -1,5 +1,5 @@
 import math
-import urllib
+from operator import itemgetter
 
 import formencode
 
@@ -11,11 +11,7 @@ from shootout.models import DBSession
 from shootout.models import User, Idea, Tag
 
 
-COOKIE_VOTED = 'shootout.voted'
-
-
 def main_view(request):
-    import pdb;pdb.set_trace()
     hitpct = Idea.ideas_bunch(Idea.hit_percentage.desc())
     top = Idea.ideas_bunch(Idea.hits.desc())
     bottom = Idea.ideas_bunch(Idea.misses.desc())
@@ -60,15 +56,12 @@ def idea_vote(request):
         idea.author.misses += 1
         voter.delivered_misses += 1
 
+    idea.voted.append(voter)
+
     session.flush()
-    
-    #:request.session.
 
     redirect_url = request.route_url('idea', idea_id=idea.id)
     response = HTTPMovedPermanently(location=redirect_url)
-
-    cookie = '.'.join((COOKIE_VOTED, idea.idea_id, voter_username))
-    response.set_cookie(cookie.encode('utf-8'), vote)
 
     return response
 
@@ -164,23 +157,17 @@ def idea_add(request):
         kind = 'comment'
     else:
         kind = 'idea'
+
     login_form = login_form_view(request)
-    app_url='oo'
-    return render_to_response(
-        'templates/idea_add.pt',
-        dict(
-            app_url=app_url,
-            message=message,
-            toolbar=toolbar_view(request),
-            cloud=cloud_view(request),
-            latest=latest_view(request),
-            login_form=login_form,
-            target=target,
-            kind=kind,
-            request=request,
-            ),
-        request,
-        )
+
+    return {
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(request),
+        'login_form': login_form,
+        'target': target,
+        'kind': kind,
+    }
 
 
 def user_view(request):
@@ -246,9 +233,11 @@ def about_view(context, request):
         'login_form': login_form_view(request),
     }
 
+
 def login_form_view(request):
     logged_in = authenticated_userid(request)
     return render('templates/login.pt', {'loggedin': logged_in}, request)
+
 
 def login_view(request):
     main_view = request.route_url('main')
@@ -266,6 +255,7 @@ def login_view(request):
     
     request.session.flash('Failed to login.')
     return HTTPFound(location=came_from)
+
 
 def logout_view(request):
     request.session.invalidate()
@@ -287,6 +277,7 @@ def cloud_view(request):
     for tag in tag_counts:
         weight = int((math.log(tag[1] or 1) * 4) + 10)
         totalcounts.append((tag[0], tag[1],weight))
-    cloud = sorted(totalcounts, cmp=lambda x,y: cmp(x[0], y[0]))
+    cloud = sorted(totalcounts, key=itemgetter(0))
+
     return render('templates/cloud.pt', {'cloud': cloud}, request)
 
