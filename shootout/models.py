@@ -126,8 +126,9 @@ voted_users = Table('ideas_votes', Base.metadata,
 class Idea(Base):
     __tablename__ = 'ideas'
     idea_id = Column(Integer, primary_key=True)
-    target_id = Column(Integer, ForeignKey('idea.idea_id'))
-    target = relation('Idea', backref='comments', cascade="delete")
+    target_id = Column(Integer, ForeignKey('ideas.idea_id'))
+    comments = relation('Idea', cascade="delete",
+        backref=backref('target', remote_side=idea_id))
     author_id = Column(Integer, ForeignKey('users.user_id'))
     author = relation(User, cascade="delete",
         backref=backref('ideas', order_by=User.username))
