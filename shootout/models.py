@@ -126,7 +126,8 @@ voted_users = Table('ideas_votes', Base.metadata,
 class Idea(Base):
     __tablename__ = 'ideas'
     idea_id = Column(Integer, primary_key=True)
-    target = Column(Integer)
+    target_id = Column(Integer, ForeignKey('idea.idea_id'))
+    target = relation('Idea', backref='comments', cascade="delete")
     author_id = Column(Integer, ForeignKey('users.user_id'))
     author = relation(User, cascade="delete",
         backref=backref('ideas', order_by=User.username))
@@ -136,7 +137,6 @@ class Idea(Base):
     misses = Column(Integer, default=0)
     tags = relation(Tag, secondary=ideas_tags, backref='ideas')
     voted_users = relation(User, secondary=voted_users, backref='voted_ideas')
-
     hit_percentage = (hits / (hits + misses) * 100)
     hit_percentage = column_property(
         hit_percentage.label('hit_percentage')

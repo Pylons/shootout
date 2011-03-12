@@ -178,7 +178,7 @@ def user_view(request):
         'user': user,
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
-        'latest': latest_view(context,request),
+        'latest': latest_view(request),
         'login_form' :login_form,
     }
 
@@ -188,14 +188,13 @@ def idea_view(request):
     idea = Idea.get_by_id(idea_id)
 
     viewer_username = authenticated_userid(request)
-    idea_cookie = '%s.%s.%s' % (COOKIE_VOTED, idea.idea_id, viewer_username)
-    voted = request.cookies.get(idea_cookie, None)
+    voted = False
     login_form = login_form_view(request)
 
     return {
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
-        'latest': latest_view(context,request),
+        'latest': latest_view(request),
         'login_form': login_form,
         'voted': voted,
         'viewer_username': viewer_username,
@@ -212,7 +211,7 @@ def tag_view(request):
         'app_url': request.application_url,
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
-        'latest': latest_view(context,request),
+        'latest': latest_view(request),
         'login_form': login_form,
         'ideas': ideas,
     }

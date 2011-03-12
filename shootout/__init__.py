@@ -29,7 +29,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'shootout:static')
     config.add_route('idea', '/ideas/{idea_id}',
                      view='shootout.views.idea_view',
-                     view_renderer='templages/idea.pt')
+                     view_renderer='templates/idea.pt')
     config.add_route('user', '/users/{username}',
                      view='shootout.views.user_view',
                      view_renderer='templates/user.pt')
