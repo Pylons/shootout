@@ -1,164 +1,77 @@
-try:
-    import hashlib
-    sha1 = hashlib.sha1
-except ImportError:
-    import sha
-    sha1 = sha.new
-import os
 import math
 import urllib
 
-import webob
 import formencode
-from webob.exc import HTTPFound
-from webob.exc import HTTPUnauthorized
 
-from sqlalchemy.sql import func
-
-from pyramid.renderers import render_to_response
-from pyramid.renderers import render
-from pyramid.security import authenticated_userid
-from pyramid.view import static
+from pyramid.renderers import render_to_response, render
+from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound
+from pyramid.security import authenticated_userid, remember, forget
 
 from shootout.models import DBSession
-from shootout.models import User
-from shootout.models import Idea
-from shootout.models import Tag
-from shootout.models import IdeaTag
+from shootout.models import User, Idea, Tag
 
-resources = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'resources')
-static_view = static(resources)
 
 COOKIE_VOTED = 'shootout.voted'
 
-def idea_bunch(order_by, how_many=10):
-    session = DBSession()
-    return session.query(Idea).join('users').filter(
-        Idea.target==None).order_by(order_by).all()[:how_many]
 
-def main_view(context, request):
-    params = request.params
-    message = params.get('message','')
-    hitpct = idea_bunch(Idea.hit_percentage.desc(), 10)
-    top = idea_bunch(Idea.hits.desc(), 10)
-    bottom = idea_bunch(Idea.misses.desc(), 10)
-    last10 = idea_bunch(Idea.idea_id.desc(), 10)
-    toplists=[
-        {'title':'Latest shots','items':last10},
-        {'title':'Most hits','items':top},
-        {'title':'Most misses','items':bottom},
-        {'title':'Best performance','items':hitpct},
-        ]
-    login_form = login_form_view(context,request)
-    return render_to_response(
-        'templates/main.pt',
-        dict(
-            username = authenticated_userid(request),
-            app_url=request.application_url,
-            message=message,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            toplists=toplists
-            ),
-        request,
-        )
+def main_view(request):
+    import pdb;pdb.set_trace()
+    hitpct = Idea.ideas_bunch(Idea.hit_percentage.desc())
+    top = Idea.ideas_bunch(Idea.hits.desc())
+    bottom = Idea.ideas_bunch(Idea.misses.desc())
+    last10 = Idea.ideas_bunch(Idea.idea_id.desc())
 
-def idea_vote(context, request):
-    app_url = request.application_url
-    response = webob.Response()
+    toplists = [
+        {'title': 'Latest shots', 'items': last10},
+        {'title': 'Most hits', 'items': top},
+        {'title': 'Most misses', 'items': bottom},
+        {'title': 'Best performance', 'items': hitpct},
+    ]
+
+    login_form = login_form_view(request)
+    
+    return {
+        'username': authenticated_userid(request),
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(request),
+        'login_form': login_form,
+        'toplists': toplists,
+    }
+
+
+def idea_vote(request):
     params = request.params
     target = params.get('target')
-    session = DBSession()
-    idea = session.query(Idea).filter(Idea.idea_id==target).one()
+
+    idea = Idea.get_by_id(target)
     voter_username = authenticated_userid(request)
-    voter = session.query(User).filter(User.username==voter_username).one()
-    poster = session.query(User).filter(User.user_id==idea.author).one()
+    voter = User.get_by_username(voter_username)
+
     if params.get('form.vote_hit'):
-        vote='hit'
-        idea.hits=idea.hits+1
-        poster.hits=poster.hits+1
-        voter.delivered_hits=voter.delivered_hits+1
-    if params.get('form.vote_miss'):
-        vote='miss'
-        idea.misses=idea.misses+1
-        poster.misses=poster.misses+1
-        voter.delivered_misses=voter.delivered_misses+1
-    cookie = "%s.%s.%s" % (COOKIE_VOTED,idea.idea_id,voter_username)
-    response.set_cookie(cookie.encode('utf-8'), vote)
+        vote = 'hit'
+        idea.hits += 1
+        idea.author.hits += 1
+        voter.delivered_hits += 1
+
+    elif params.get('form.vote_miss'):
+        vote = 'miss'
+        idea.misses += 1
+        idea.author.misses += 1
+        voter.delivered_misses += 1
+
     session.flush()
-    url = "%s/ideas/%s" % (app_url,idea.idea_id)
-    response.status = '301 Moved Permanently'
-    response.headers['Location'] = url
+    
+    #:request.session.
+
+    redirect_url = request.route_url('idea', idea_id=idea.id)
+    response = HTTPMovedPermanently(location=redirect_url)
+
+    cookie = '.'.join((COOKIE_VOTED, idea.idea_id, voter_username))
+    response.set_cookie(cookie.encode('utf-8'), vote)
+
     return response
 
-class AddIdea(formencode.Schema):
-    allow_extra_fields = True
-    title = formencode.validators.String(not_empty=True)
-    text = formencode.validators.String(not_empty=True)
-    tags = formencode.validators.String(not_empty=True)
-
-def idea_add(context, request):
-    app_url = request.application_url
-    params = request.params
-    message = params.get('message','')
-    session = DBSession()
-    if params.get('form.submitted'):
-        target = params.get('target', None)
-        title = params.get('title')
-        text = params.get('text')
-        tags = params.get('tags')
-        schema = AddIdea()
-        try:
-            schema.to_python(params)
-        except formencode.validators.Invalid, why:
-            message=urllib.quote(str(why))
-            url = "%s/idea_add?message=%s" % (app_url,message)
-        else:
-            author_id = authenticated_userid(request)
-            author = session.query(User).filter(
-                User.username==author_id).one().user_id
-            idea = Idea(target=target, author=author, title=title, text=text)
-            session.add(idea)
-            tags = tags.replace(';',' ').replace(',',' ')
-            tags = [tag.lower() for tag in tags.split()]
-            tags = set(tags)
-            if '' in tags:
-                tags.remove('')
-            for tagname in tags:
-                existent = session.query(Tag).filter(Tag.name==tagname).all()
-                if not existent:
-                    tag = Tag(name=tagname)
-                    session.add(tag)
-                    idea.tags.append(tag)
-                else:
-                    idea.tags.append(existent[0])
-            url = "%s/ideas/%s" % (app_url, idea.idea_id)
-        return HTTPFound(location=url)
-    target = params.get('target', None)
-    kind = 'idea'
-    if target is not None:
-        target = session.query(Idea).join('users').filter(
-            Idea.idea_id==target).one()
-        kind = 'comment'
-    login_form = login_form_view(context,request)
-    return render_to_response(
-        'templates/idea_add.pt',
-        dict(
-            app_url=app_url,
-            message=message,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            target=target,
-            kind=kind,
-            request=request,
-            ),
-        request,
-        )
 
 class Registration(formencode.Schema):
     allow_extra_fields = True
@@ -169,186 +82,211 @@ class Registration(formencode.Schema):
     password = formencode.validators.String(not_empty=True)
     confirm_password = formencode.validators.String(not_empty=True)
     chained_validators = [
-        formencode.validators.FieldsMatch('password','confirm_password')]
+        formencode.validators.FieldsMatch('password','confirm_password')
+    ]
 
-def user_add(context, request):
-    app_url = request.application_url
-    params = request.params
-    message = params.get('message','')
-    if params.get('form.submitted'):
+
+def user_add(request):
+    post_data = request.POST
+    if 'form.submitted' in post_data:
         headers = []
-        username = params.get('username', None)
-        password = params.get('password', None)
-        name = params.get('name', None)
-        email = params.get('email', None)
+        username = post_data.get('username', None)
+        password = post_data.get('password', None)
+        name = post_data.get('name', None)
+        email = post_data.get('email', None)
+
         schema = Registration()
-        session = DBSession()
         try:
-            schema.to_python(params)
+            schema.to_python(post_data)
         except formencode.validators.Invalid, why:
-            message=urllib.quote(str(why))
-            url = "%s/register?message=%s" % (app_url, message)
+            why = str(why).splitlines()
+            for i in why:
+                request.session.flash(i)
+            url = request.route_url('register')
         else:
-            password='{SHA}%s' % sha1(password).hexdigest()
+            session = DBSession()
             user = User(username=username, password=password, name=name,
                         email=email)
             session.add(user)
-            # try to autolog the user in
-            plugins = request.environ.get('repoze.who.plugins', {})
-            identifier = plugins.get('auth_tkt')
-            if identifier:
-                identity = {'repoze.who.userid': username}
-                headers = identifier.remember(request.environ, identity)
-            request.environ['repoze.who.userid'] = username
-            url = "%s?message=%s" % (app_url,message)
+            headers = remember(request, username)
+            url = request.route_url('main')
         return HTTPFound(location=url, headers=headers)
 
-    login_form = login_form_view(context, request)
+    login_form = login_form_view(request)
 
+    return {
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(request),
+        'login_form': login_form,
+    }
+
+class AddIdea(formencode.Schema):
+    allow_extra_fields = True
+    title = formencode.validators.String(not_empty=True)
+    text = formencode.validators.String(not_empty=True)
+    tags = formencode.validators.String(not_empty=True)
+
+
+def idea_add(request):
+    post = request.POST
+    message = post.get('message','')
+    session = DBSession()
+
+    if post.get('form.submitted'):
+        target = post.get('target', None)
+        title = post.get('title')
+        text = post.get('text')
+        tags_string = post.get('tags')
+        schema = AddIdea()
+        try:
+            schema.to_python(post)
+        except formencode.validators.Invalid, why:
+            request.session.flash(message)
+        else:
+            author_username = authenticated_userid(request)
+            author = User.get_by_username(author_username)
+            idea = Idea(target=target, author=author, title=title, text=text)
+            session.add(idea)
+            tags = Tag.create_tags(tags_string)
+            if tags:
+                idea.tags = tags
+
+            redirect_url = request.route_url('idea', idea_id=idea.idea_id)
+
+        return HTTPFound(location=redirect_url)
+
+    target = params.get('target', None)
+    kind = 'idea'
+    if target is not None:
+        target = session.query(Idea).join('author').filter(
+            Idea.idea_id==target).one()
+        kind = 'comment'
+    else:
+        kind = 'idea'
+    login_form = login_form_view(request)
+    app_url='oo'
     return render_to_response(
-        'templates/user_add.pt',
+        'templates/idea_add.pt',
         dict(
+            app_url=app_url,
             message=message,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
+            toolbar=toolbar_view(request),
+            cloud=cloud_view(request),
+            latest=latest_view(request),
             login_form=login_form,
-            app_url=app_url,
+            target=target,
+            kind=kind,
+            request=request,
             ),
         request,
         )
 
-def user_view(context, request):
-    app_url = request.application_url
-    session = DBSession()
-    user = session.query(User).filter(User.username==context.user).one()
-    login_form = login_form_view(context, request)
-    return render_to_response(
-        'templates/user.pt',
-        dict(
-            user=user,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            app_url=app_url,
-            ),
-        request,
-        )
 
-def idea_view(context, request):
-    session = DBSession()
-    idea = session.query(Idea).filter(Idea.idea_id==context.idea).one()
-    poster = session.query(User).filter(User.user_id==idea.author).one()
+def user_view(request):
+    username = request.matchdict['username']
+    user = User.get_by_username(username)
+    login_form = login_form_view(request)
+    return {
+        'user': user,
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(context,request),
+        'login_form' :login_form,
+    }
+
+
+def idea_view(request):
+    idea_id = request.matchdict['idea_id']
+    idea = Idea.get_by_id(idea_id)
+
     viewer_username = authenticated_userid(request)
-    idea_cookie = '%s.%s.%s' % (COOKIE_VOTED,idea.idea_id,viewer_username)
+    idea_cookie = '%s.%s.%s' % (COOKIE_VOTED, idea.idea_id, viewer_username)
     voted = request.cookies.get(idea_cookie, None)
-    comments = session.query(Idea).filter(Idea.target==context.idea).all()
-    login_form = login_form_view(context, request)
-    return render_to_response(
-        'templates/idea.pt',
-        dict(
-            app_url=request.application_url,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            poster=poster,
-            voted=voted,
-            comments=comments,
-            viewer_username=viewer_username,
-            idea=idea,
-            ),
-        request,
-        )
+    login_form = login_form_view(request)
 
-def tag_view(context, request):
-    session = DBSession()
-    ideas = session.query(Idea).filter(Idea.tags.any(name=context.tag)).all()
-    login_form = login_form_view(context, request)
-    return render_to_response(
-        'templates/tag.pt',
-        dict(
-            tag=context.tag,
-            app_url=request.application_url,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            ideas=ideas,
-            ),
-        request,
-        )
+    return {
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(context,request),
+        'login_form': login_form,
+        'voted': voted,
+        'viewer_username': viewer_username,
+        'idea': idea,
+    }
 
-def about_view(context, request):
-    login_form = login_form_view(context, request)
-    return render_to_response(
-        'templates/about.pt',
-        dict(
-            app_url=request.application_url,
-            toolbar=toolbar_view(context,request),
-            cloud=cloud_view(context,request),
-            latest=latest_view(context,request),
-            login_form=login_form,
-            ),
-        request,
-        )
 
-def logout_view(context, request):
-    # the Location in the headers tells the form challenger to redirect
-    return HTTPUnauthorized(headers=[('Location', request.application_url)])
+def tag_view(request):
+    tagname = request.matchdict['tagname']
+    ideas = Idea.get_by_tagname(tagname)
+    login_form = login_form_view(request)
+    return {
+        'tag': tagname,
+        'app_url': request.application_url,
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(context,request),
+        'login_form': login_form,
+        'ideas': ideas,
+    }
 
-def login_view(context, request):
-    return main_view(context, request)
-
-def toolbar_view(context, request):
+def toolbar_view(request):
     viewer_username = authenticated_userid(request)
     return render(
         'templates/toolbar.pt',
-        dict(
-            app_url=request.application_url,
-            viewer_username=viewer_username,
-            ),
-        request,
-        )
+        {'viewer_username': viewer_username}, 
+        request
+    )
 
-def login_form_view(context, request):
-    loggedin = authenticated_userid(request)
-    return render(
-        'templates/login.pt',
-        dict(
-            app_url=request.application_url,
-            loggedin=loggedin,
-            ),
-        request,
-        )
+def about_view(context, request):
+    return {
+        'toolbar': toolbar_view(request),
+        'cloud': cloud_view(request),
+        'latest': latest_view(request),
+        'login_form': login_form_view(request),
+    }
 
-def latest_view(context, request):
-    latest = idea_bunch(Idea.idea_id.desc(), 10)
-    return render(
-        'templates/latest.pt',
-        dict(
-            app_url=request.application_url,
-            latest=latest,
-            ),
-        request,
-        )
+def login_form_view(request):
+    logged_in = authenticated_userid(request)
+    return render('templates/login.pt', {'loggedin': logged_in}, request)
 
-def cloud_view(context, request):
+def login_view(request):
+    main_view = request.route_url('main')
+    came_from = request.params.get('came_from', main_view)
+
+    post_data = request.POST
+    if 'submit' in post_data:
+        login = post_data['login']
+        password = post_data['password']
+
+        if User.check_password(login, password):
+            headers = remember(request, login)
+            request.session.flash('Logged in successfully.')
+            return HTTPFound(location=came_from, headers=headers)
+    
+    request.session.flash('Failed to login.')
+    return HTTPFound(location=came_from)
+
+def logout_view(request):
+    request.session.invalidate()
+    request.session.flash('Logged out successfully.')
+    headers = forget(request)
+    return HTTPFound(location=request.route_url('main'),
+                     headers=headers)
+
+def latest_view(request):
+    latest = Idea.ideas_bunch(Idea.idea_id.desc())
+    return render('templates/latest.pt', {'latest': latest}, request)
+
+def cloud_view(request):
+    from sqlalchemy import func
     session = DBSession()
     tag_counts = session.query(
-        Tag.name, func.count('*')).join(IdeaTag).group_by(Tag.name).all()
+        Tag.name, func.count('*')).join('ideas').group_by(Tag.name).all()
     totalcounts = []
     for tag in tag_counts:
         weight = int((math.log(tag[1] or 1) * 4) + 10)
         totalcounts.append((tag[0], tag[1],weight))
     cloud = sorted(totalcounts, cmp=lambda x,y: cmp(x[0], y[0]))
-    return render(
-        'templates/cloud.pt',
-        dict(
-            app_url=request.application_url,
-            cloud=cloud
-            ),
-        request,
-        )
+    return render('templates/cloud.pt', {'cloud': cloud}, request)
 

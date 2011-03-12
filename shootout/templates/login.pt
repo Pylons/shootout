@@ -1,6 +1,6 @@
 <div id="login_form" xmlns="http://www.w3.org/1999/xhtml"
      xmlns:tal="http://xml.zope.org/namespaces/tal">
-    <form id="login_form" action="?__do_login=true" method="post" tal:condition="not loggedin">
+    <form id="login_form" action="/login" method="post" tal:condition="not loggedin">
     <h2>Log In</h2>
     <fieldset>
         <label for="login">Username:</label>

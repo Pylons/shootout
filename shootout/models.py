@@ -1,177 +1,169 @@
-from zope.interface import implements
-from zope.interface import Interface
+try:
+    import hashlib
+    sha1 = hashlib.sha1
+except ImportError:
+    import sha
+    sha1 = sha.new
 
-from zope.sqlalchemy import ZopeTransactionExtension
+from random import sample
+from string import letters
 
-from pyramid.security import Allow
-from pyramid.security import Everyone
-from pyramid.security import Authenticated
+import transaction
+
+from sqlalchemy import Table, Column, ForeignKey
+from sqlalchemy.orm import relation, backref, column_property
+from sqlalchemy.types import Integer, Unicode, UnicodeText
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.declarative import declarative_base
 
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import mapper
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import relation
 
-from sqlalchemy import Table
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Column
-from sqlalchemy import Text
-from sqlalchemy import MetaData
-from sqlalchemy import create_engine
+from zope.sqlalchemy import ZopeTransactionExtension
 
-from repoze.who.plugins.sql import SQLAuthenticatorPlugin
-from repoze.who.plugins.sql import default_password_compare
+from pyramid.security import Everyone
+from pyramid.security import Authenticated
+from pyramid.security import Allow
+
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
+Base = declarative_base()
 
-def connection_factory():
-    session = DBSession()
-    return session.connection().connection.connection
 
-def make_authenticator_plugin():
-    query = "SELECT username,password FROM users where username = :login;"
-    conn_factory = connection_factory
-    compare_fn = default_password_compare
-    return SQLAuthenticatorPlugin(query, conn_factory, compare_fn)
+def hash_password(salt, password):
+    return sha1(salt + password).hexdigest()
 
-metadata = MetaData()
+class User(Base):
+    """
+    Application's user model.
+    """
+    __tablename__ = 'users'
+    user_id = Column(Integer, primary_key=True)
+    username = Column(Unicode(20), unique=True)
+    password = Column(Unicode(53))
+    name = Column(Unicode(50))
+    email = Column(Unicode(50))
+    hits = Column(Integer, default=0)
+    misses = Column(Integer, default=0)
+    delivered_hits = Column(Integer, default=0)
+    delivered_missed = Column(Integer, default=0)
 
-users_table = Table(
-    'users',
-    metadata,
-    Column('user_id', Integer, primary_key=True),
-    Column('username', String(20), unique=True),
-    Column('password', String(20)),
-    Column('name', String(50)),
-    Column('email', String(50)),
-    Column('hits', Integer),
-    Column('misses', Integer),
-    Column('delivered_hits', Integer),
-    Column('delivered_misses', Integer),
+    def __init__(self, username, password, name, email):
+        self.username = username
+        self.name = name
+        self.email = email
+
+        salt = ''.join(sample(letters, 8))
+        self.password = 'SHA|%s|%s' % (salt, hash_password(salt, password))
+
+    @classmethod
+    def get_by_username(cls, username):
+        return DBSession.query(cls).filter(cls.username==username).first()
+
+    @classmethod
+    def check_password(cls, username, password):
+        user = cls.get_by_username(username)
+        if not user:
+            return False
+        (salt, user_password) = user.password.split('|')[1:]
+        return user_password == hash_password(salt, password)
+        
+
+ideas_tags = Table('ideas_tags', Base.metadata,
+    Column('idea_id', Integer, ForeignKey('ideas.idea_id')),
+    Column('tag_id', Integer, ForeignKey('tags.tag_id'))
 )
 
-class IUser(Interface):
-    pass
 
-class User(object):
-    implements(IUser)
-    def __init__(self,username,password,name,email):
-        self.username=username
-        self.password=password
-        self.name=name
-        self.email=email
-        self.hits=0
-        self.misses=0
-        self.delivered_hits=0
-        self.delivered_misses=0
+class Tag(Base):
+    """
+    Idea's tag model.
+    """
+    __tablename__ = 'tags'
+    tag_id = Column(Integer, primary_key=True)
+    name = Column(Unicode(50), unique=True, index=True)
 
-user_mapper = mapper(User, users_table)
-
-tags_table = Table(
-    'tags',
-    metadata,
-    Column('tag_id', Integer, primary_key=True),
-    Column('name', String(50), unique=True, nullable=False, index=True)
-)
-
-ideas_tags_table = Table(
-    'ideas_tags',
-    metadata,
-    Column('idea_id', Integer, ForeignKey('ideas.idea_id'), primary_key=True),
-    Column('tag_id', Integer, ForeignKey('tags.tag_id'), primary_key=True),
-)
-
-class ITag(Interface):
-    pass
-
-class Tag(object):
-    implements(ITag)
     def __init__(self, name):
         self.name = name
 
-class IIdeaTag(Interface):
-    pass
+    @staticmethod
+    def extract_tags(tags_string):
+        tags = tags_string.replace(';',' ').replace(',',' ')
+        tags = [tag.lower() for tag in tags.split()]
+        tags = set(tags)
 
-class IdeaTag(object):
-    implements(IIdeaTag)
+        if '' in tags:
+            tags.remove('')
+        return tags
 
-tag_mapper = mapper(Tag, tags_table)
+    @classmethod
+    def get_by_name(cls, tag_name):
+        tag = DBSession.query(cls).filter(cls.name==tag_name)
+        return tag.first()
 
-ideas_table = Table(
-    'ideas',
-    metadata,
-    Column('idea_id', Integer, primary_key=True),
-    Column('target', Integer),
-    Column('author', Integer, ForeignKey('users.user_id')),
-    Column('title', Text),
-    Column('text', Text),
-    Column('hits', Integer),
-    Column('misses', Integer),
-)
+    @classmethod
+    def create_tags(cls, tags_string):
+        tags_list = cls.extract_tags(tags_string)
+        tags = []
 
-class IIdea(Interface):
-    pass
+        for tag_name in tags_list:
+            tag = cls.get_by_name(tag_name)
+            if not tag:
+                tag = Tag(name=tag_name)
+                DBSession.add(tag)
+            tags.append(tag)
 
-class Idea(object):
-    implements(IIdea)
-    __acl__ = [ (Allow, Everyone, 'view'), ]
-    def __init__(self, target, author, title, text):
-       self.target = target
-       self.author = author
-       self.title = title
-       self.text = text
-       self.hits = 0
-       self.misses = 0
+        return tags
+            
 
-hit_percentage = (
-    (ideas_table.c.hits > 0 or ideas_table.c.misses > 0) and
-    (ideas_table.c.hits /
-     (ideas_table.c.hits+ideas_table.c.misses)*100) or 0
+class Idea(Base):
+    __tablename__ = 'ideas'
+    idea_id = Column(Integer, primary_key=True)
+    target = Column(Integer)
+    author_id = Column(Integer, ForeignKey('users.user_id'))
+    author = relation(User, cascade="delete",
+        backref=backref('ideas', order_by=User.username))
+    title = Column(UnicodeText)
+    text = Column(UnicodeText)
+    hits = Column(Integer, default=0)
+    misses = Column(Integer, default=0)
+    tags = relation(Tag, secondary=ideas_tags, backref='ideas')
+
+    hit_percentage = (hits / (hits + misses) * 100)
+    hit_percentage = column_property(
+        hit_percentage.label('hit_percentage')
     )
 
-hit_percentage = column_property(hit_percentage.label('hit_percentage'))
+    total_votes = column_property((hits + misses).label('total_votes'))
 
-total_votes = column_property(
-    (ideas_table.c.hits + ideas_table.c.misses).label('total_votes')
+    vote_differential = column_property(
+        (hits - misses).label('vote_differential')
     )
 
-vote_differential = column_property(
-    (ideas_table.c.hits-ideas_table.c.misses).label('vote_differential')
-    )
+    @classmethod
+    def get_by_id(cls, idea_id):
+        return DBSession.query(cls).filter(cls.idea_id==idea_id).one()
 
-idea_mapper = mapper(Idea, ideas_table, properties={
-    'total_votes':total_votes,
-    'vote_differential':vote_differential,
-    'hit_percentage':hit_percentage,
-    'users':relation(User, order_by=users_table.c.user_id),
-    'tags':relation(Tag, secondary=ideas_tags_table, backref='ideas'),
-})
+    @classmethod
+    def get_by_tagname(cls, tag_name):
+        return DBSession.query(Idea).filter(Idea.tags.any(name=tag_name))
 
-idea_tag_mapper = mapper(IdeaTag, ideas_tags_table)
+    @classmethod
+    def ideas_bunch(cls, order_by, how_many=10):
+        q = DBSession.query(cls).join('author').filter(cls.target==None)
+        return q.order_by(order_by)[:how_many]
 
-class IRange(Interface):
-    pass
-
-class Range(object):
-    implements(IRange)
-    __acl__ = [ (Allow, Everyone, 'view'), (Allow, Authenticated, 'post')]
-
-class URLDispatchRootFactory:
-    def __init__(self, environ):
-        self.__dict__.update(environ['bfg.routes.matchdict'])
-
-firing_range = Range()
-
-def get_root(environ):
-    return firing_range
-
-def initialize_sql(db_string, echo=False):
-    engine = create_engine(db_string, echo=echo)
+class RootFactory(object):
+    __acl__ = [
+        (Allow, Everyone, 'view'),
+        (Allow, Authenticated, 'post')
+    ]
+    def __init__(self, request):
+        pass
+    
+def initialize_sql(engine):
     DBSession.configure(bind=engine)
-    metadata.bind = engine
-    metadata.create_all(engine)
-    return engine
+    Base.metadata.bind = engine
+    Base.metadata.create_all(engine)
 

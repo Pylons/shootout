@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<rules xmlns:xi="http://www.w3.org/2001/XInclude" xmlns="http://www.plone.org/deliverance">
-  <prepend theme="//head" content="//head/link" nocontent="ignore" /> 
-  <prepend theme="//head" content="//head/style" nocontent="ignore" /> 
-  <append theme="//head" content="//head/script" nocontent="ignore" />    
-  <append theme="//head" content="//head/meta" nocontent="ignore" />
-  <append-or-replace theme="//head" content="//head/title"
-   nocontent="ignore" />
-</rules>
