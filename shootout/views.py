@@ -95,11 +95,15 @@ def user_add(request):
 
     form = Form(request, schema=RegistrationSchema)
 
-    params = request.params
-    if 'form.submitted' in params and form.validate():
+    if 'form.submitted' in request.params and form.validate():
         session = DBSession()
-        user = User()
-        user = form.bind(user)
+        username=form.data['username']
+        user = User(
+            username=username,
+            password=form.data['password'],
+            name=form.data['name'],
+            email=form.data['email']
+        )
         session.add(user)
 
         headers = remember(request, username)
@@ -119,7 +123,7 @@ def user_add(request):
     }
 
 
-class AddIdea(formencode.Schema):
+class AddIdeaSchema(formencode.Schema):
     allow_extra_fields = True
     title = formencode.validators.String(not_empty=True)
     text = formencode.validators.String(not_empty=True)
@@ -141,32 +145,32 @@ def idea_add(request):
     else:
         kind = 'idea'
 
-    if params.get('form.submitted'):
-        title = params.get('title')
-        text = params.get('text')
-        tags_string = params.get('tags')
-        schema = AddIdea()
-        try:
-            schema.to_python(params)
-        except formencode.validators.Invalid, why:
-            why = str(why).splitlines()
-            for i in why:  # TODO: simpleform
-                request.session.flash(i)
-        else:
-            author_username = authenticated_userid(request)
-            author = User.get_by_username(author_username)
-            idea = Idea(target=target, author=author, title=title, text=text)
-            tags = Tag.create_tags(tags_string)
-            if tags:
-                idea.tags = tags
-            session.add(idea)            
-            redirect_url = request.route_url('idea', idea_id=idea.idea_id)
+    form = Form(request, schema=AddIdeaSchema)
+
+    if params.get('form.submitted') and form.validate():
+        author_username = authenticated_userid(request)
+        author = User.get_by_username(author_username)
+
+        idea = Idea(
+            target=target,
+            author=author,
+            title=form.data['title'],
+            text=form.data['text']
+        )
+
+        tags = Tag.create_tags(form.data['tags'])
+        if tags:
+            idea.tags = tags
+
+        session.add(idea)            
+        redirect_url = request.route_url('idea', idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
 
     login_form = login_form_view(request)
 
     return {
+        'form': FormRenderer(form),
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
         'latest': latest_view(request),

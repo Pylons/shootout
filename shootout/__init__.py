@@ -29,6 +29,8 @@ def main(global_config, **settings):
 
     config.add_subscriber('shootout.subscribers.add_base_template',
                           'pyramid.events.BeforeRender')
+    config.add_subscriber('shootout.subscribers.csrf_validation',
+                          'pyramid.events.NewRequest')
 
     config.add_static_view('static', 'shootout:static')
 

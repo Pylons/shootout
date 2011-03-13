@@ -6,19 +6,19 @@
 <tal:block metal:fill-slot="content">
     <h1>Register</h1>
     ${form.begin(request.route_url('register'))}
-    <form action="register" method="post">
         <fieldset>
+            ${form.csrf_token()}
             ${form.errorlist('username')}
             ${form.label('username', 'Username:')}
             ${form.text('username')}
             <br />
             ${form.errorlist('password')}
             ${form.label('password', 'Password:')}
-            ${form.text('password')}
+            ${form.password('password')}
             <br />
             ${form.errorlist('confirm_password')}
             ${form.label('confirm_password', 'Confirm password:')}
-            ${form.text('confirm_password')}
+            ${form.password('confirm_password')}
             <br />
             ${form.errorlist('name')}
             ${form.label('name', 'Full name:')}

@@ -27,6 +27,8 @@
     </div>
     <div tal:condition="not voted and viewer_username">
         <form action="${request.route_url('idea_vote')}" method="post">
+            <input name="_csrf" type="hidden"
+                value="${request.session.get_csrf_token()}">
             <input type="hidden" name="target" value="${idea.idea_id}" />
             <input type="submit" class="submit" name="form.vote_hit" value="Hit" />
             <input type="submit" class="submit" name="form.vote_miss" value="Miss" />
