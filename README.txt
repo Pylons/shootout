@@ -6,19 +6,18 @@ demonstrated in the code include:
 
 - Urldispatch mechanism (similar to routes).
 
-- Integration with the repoze.who authentication endware.
+- Built-in authentication and authorization mechanism.
 
-- Integration with the deliverance filter for theming.
+- Integration with pyramid_simpleform for form handling.
 
 - SQLAlchemy based models.
 
 Library Requirements
 --------------------
 
-shootout requires a C compiler, SQLite3, and libxml2 and libxslt bindings.
+shootout requires a SQLite3 bindings.
 
-On a Debian system, these imply: build-essentials, libsqlite3-dev,
-libxml2-dev, libxslt-dev.
+On a Debian system, these imply: build-essentials, libsqlite3-dev.
 
 Installing and Running
 ----------------------

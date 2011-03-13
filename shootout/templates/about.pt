@@ -12,8 +12,8 @@
         <p>The concepts demonstrated in the code include:</p>
         <ul>
             <li>Urldispatch mechanism (similar to routes).</li>
-            <li>Built-in authorization and authentication mechanism.</li>
-            <li>Integration with the pyramid_simpleform.</li>
+            <li>Built-in authentication and authorization mechanism.</li>
+            <li>Integration with pyramid_simpleform for form handling.</li>
             <li>SQLAlchemy based models.</li>
         </ul>
         <p>The code can be checked out from the version control repository at:</p>
