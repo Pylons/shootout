@@ -1,4 +1,4 @@
-0.0
----
+Next release
+============
 
--  Initial version
+- Forked from repoze.shootout 0.6dev
