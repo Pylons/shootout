@@ -5,26 +5,32 @@
 
 <tal:block metal:fill-slot="content">
     <h1>Register</h1>
+    ${form.begin(request.route_url('register'))}
     <form action="register" method="post">
         <fieldset>
-            <label for="username">Username</label>
-            <input type="text" name="username" />
+            ${form.errorlist('username')}
+            ${form.label('username', 'Username:')}
+            ${form.text('username')}
             <br />
-            <label for="password">Password</label>
-            <input type="password" name="password" />
+            ${form.errorlist('password')}
+            ${form.label('password', 'Password:')}
+            ${form.text('password')}
             <br />
-            <label for="confirm_password">Confirm password</label>
-            <input type="password" name="confirm_password" />
+            ${form.errorlist('confirm_password')}
+            ${form.label('confirm_password', 'Confirm password:')}
+            ${form.text('confirm_password')}
             <br />
-            <label for="name">Full name</label>
-            <input type="text" name="name" />
+            ${form.errorlist('name')}
+            ${form.label('name', 'Full name:')}
+            ${form.text('name')}
             <br />
-            <label for="email">Email</label>
-            <input type="text" name="email" />
+            ${form.errorlist('email')}
+            ${form.label('email', 'Email:')}
+            ${form.text('email')}
             <br />
-            <input type="submit" class="submit" name="form.submitted" value="Register" />
+            ${form.submit('form.submitted', 'Register', class_='submit')}
         </fieldset>
-    </form>
+    ${form.end()}
 </tal:block>
 
 </html>

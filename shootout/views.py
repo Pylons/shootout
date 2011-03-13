@@ -3,10 +3,15 @@ from operator import itemgetter
 
 import formencode
 
+from pyramid_simpleform import Form
+from pyramid_simpleform.renderers import FormRenderer
+
 from pyramid.view import view_config
 from pyramid.renderers import render_to_response, render
 from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound, HTTPNotFound
 from pyramid.security import authenticated_userid, remember, forget
+
+
 
 from shootout.models import DBSession
 from shootout.models import User, Idea, Tag
@@ -71,7 +76,7 @@ def idea_vote(request):
     return response
 
 
-class Registration(formencode.Schema):
+class RegistrationSchema(formencode.Schema):
     allow_extra_fields = True
     username = formencode.validators.PlainText(not_empty=True)
     password = formencode.validators.PlainText(not_empty=True)
@@ -87,34 +92,26 @@ class Registration(formencode.Schema):
 @view_config(permission='view', route_name='register',
              renderer='templates/user_add.pt')
 def user_add(request):
-    params = request.params
-    if 'form.submitted' in params:
-        headers = []
-        username = params.get('username', None)
-        password = params.get('password', None)
-        name = params.get('name', None)
-        email = params.get('email', None)
 
-        schema = Registration()
-        try:
-            schema.to_python(params)
-        except formencode.validators.Invalid, why:
-            why = str(why).splitlines()
-            for i in why:
-                request.session.flash(i)
-            url = request.route_url('register')
-        else:
-            session = DBSession()
-            user = User(username=username, password=password, name=name,
-                        email=email)
-            session.add(user)
-            headers = remember(request, username)
-            url = request.route_url('main')
-        return HTTPFound(location=url, headers=headers)
+    form = Form(request, schema=RegistrationSchema)
+
+    params = request.params
+    if 'form.submitted' in params and form.validate():
+        session = DBSession()
+        user = User()
+        user = form.bind(user)
+        session.add(user)
+
+        headers = remember(request, username)
+
+        redirect_url = request.route_url('main')
+
+        return HTTPFound(location=redirect_url, headers=headers)
 
     login_form = login_form_view(request)
 
     return {
+        'form': FormRenderer(form),
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
         'latest': latest_view(request),
