@@ -152,7 +152,9 @@ def idea_add(request):
         try:
             schema.to_python(params)
         except formencode.validators.Invalid, why:
-            request.session.flash(message)
+            why = str(why).splitlines()
+            for i in why:  # TODO: simpleform
+                request.session.flash(i)
         else:
             author_username = authenticated_userid(request)
             author = User.get_by_username(author_username)
