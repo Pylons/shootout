@@ -19,7 +19,7 @@ def main_view(request):
     top = Idea.ideas_bunch(Idea.hits.desc())
     bottom = Idea.ideas_bunch(Idea.misses.desc())
     last10 = Idea.ideas_bunch(Idea.idea_id.desc())
-
+    
     toplists = [
         {'title': 'Latest shots', 'items': last10},
         {'title': 'Most hits', 'items': top},
@@ -288,14 +288,10 @@ def latest_view(request):
     return render('templates/latest.pt', {'latest': latest}, request)
 
 def cloud_view(request):
-    from sqlalchemy import func
-    session = DBSession()
-    tag_counts = session.query(
-        Tag.name, func.count('*')).join('ideas').group_by(Tag.name).all()
     totalcounts = []
-    for tag in tag_counts:
+    for tag in Tag.tag_counts():
         weight = int((math.log(tag[1] or 1) * 4) + 10)
-        totalcounts.append((tag[0], tag[1],weight))
+        totalcounts.append((tag[0], tag[1], weight))
     cloud = sorted(totalcounts, key=itemgetter(0))
 
     return render('templates/cloud.pt', {'cloud': cloud}, request)

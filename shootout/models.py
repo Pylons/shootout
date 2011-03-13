@@ -113,7 +113,11 @@ class Tag(Base):
             tags.append(tag)
 
         return tags
-
+    
+    @classmethod
+    def tag_counts(cls):
+        query = DBSession.query(Tag.name, func.count('*'))
+        return query.join('ideas').group_by(Tag.name)
 
 voted_users = Table('ideas_votes', Base.metadata,
     Column('idea_id', Integer, ForeignKey('ideas.idea_id')),
@@ -169,7 +173,8 @@ class RootFactory(object):
     ]
     def __init__(self, request):
         pass
-    
+
+
 def initialize_sql(engine):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
