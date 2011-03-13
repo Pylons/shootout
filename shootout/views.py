@@ -43,6 +43,7 @@ def main_view(request):
 def idea_vote(request):
     params = request.params
     target = params.get('target')
+    session = DBSession()
 
     idea = Idea.get_by_id(target)
     voter_username = authenticated_userid(request)
@@ -60,11 +61,11 @@ def idea_vote(request):
         idea.author.misses += 1
         voter.delivered_misses += 1
 
-    idea.voted.append(voter)
+    idea.voted_users.append(voter)
 
     session.flush()
 
-    redirect_url = request.route_url('idea', idea_id=idea.id)
+    redirect_url = request.route_url('idea', idea_id=idea.idea_id)
     response = HTTPMovedPermanently(location=redirect_url)
 
     return response
@@ -157,8 +158,7 @@ def idea_add(request):
 
         return HTTPFound(location=redirect_url)
 
-    target = post_data.get('target', None)
-    kind = 'idea'
+    target = request.GET.get('target', None)
     if target is not None:
         target = session.query(Idea).join('author').filter(
             Idea.idea_id==target).one()
