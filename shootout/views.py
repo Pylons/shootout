@@ -5,7 +5,7 @@ import formencode
 
 from pyramid.view import view_config
 from pyramid.renderers import render_to_response, render
-from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound
+from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound, HTTPNotFound
 from pyramid.security import authenticated_userid, remember, forget
 
 from shootout.models import DBSession
@@ -87,17 +87,17 @@ class Registration(formencode.Schema):
 @view_config(permission='view', route_name='register',
              renderer='templates/user_add.pt')
 def user_add(request):
-    post_data = request.POST
-    if 'form.submitted' in post_data:
+    params = request.params
+    if 'form.submitted' in params:
         headers = []
-        username = post_data.get('username', None)
-        password = post_data.get('password', None)
-        name = post_data.get('name', None)
-        email = post_data.get('email', None)
+        username = params.get('username', None)
+        password = params.get('password', None)
+        name = params.get('name', None)
+        email = params.get('email', None)
 
         schema = Registration()
         try:
-            schema.to_python(post_data)
+            schema.to_python(params)
         except formencode.validators.Invalid, why:
             why = str(why).splitlines()
             for i in why:
@@ -132,39 +132,38 @@ class AddIdea(formencode.Schema):
 @view_config(permission='post', route_name='idea_add',
              renderer='templates/idea_add.pt')
 def idea_add(request):
-    post_data = request.POST
+    params = request.params
+    target = params.get('target')
     session = DBSession()
 
-    if post_data.get('form.submitted'):
-        target = post_data.get('target', None)
-        title = post_data.get('title')
-        text = post_data.get('text')
-        tags_string = post_data.get('tags')
+    if target:
+        target = Idea.get_by_id(target)
+        if not target:
+            return HTTPNotFound()
+        kind = 'comment'
+    else:
+        kind = 'idea'
+
+    if params.get('form.submitted'):
+        title = params.get('title')
+        text = params.get('text')
+        tags_string = params.get('tags')
         schema = AddIdea()
         try:
-            schema.to_python(post_data)
+            schema.to_python(params)
         except formencode.validators.Invalid, why:
             request.session.flash(message)
         else:
             author_username = authenticated_userid(request)
             author = User.get_by_username(author_username)
             idea = Idea(target=target, author=author, title=title, text=text)
-            session.add(idea)
             tags = Tag.create_tags(tags_string)
             if tags:
                 idea.tags = tags
-
+            session.add(idea)            
             redirect_url = request.route_url('idea', idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
-
-    target = request.GET.get('target', None)
-    if target is not None:
-        target = session.query(Idea).join('author').filter(
-            Idea.idea_id==target).one()
-        kind = 'comment'
-    else:
-        kind = 'idea'
 
     login_form = login_form_view(request)
 
@@ -246,10 +245,10 @@ def login_view(request):
     main_view = request.route_url('main')
     came_from = request.params.get('came_from', main_view)
 
-    post_data = request.POST
-    if 'submit' in post_data:
-        login = post_data['login']
-        password = post_data['password']
+    params = request.params
+    if 'submit' in params:
+        login = params['login']
+        password = params['password']
 
         if User.check_password(login, password):
             headers = remember(request, login)

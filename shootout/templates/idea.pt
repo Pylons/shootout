@@ -34,7 +34,7 @@
     </div>
     <p>
         <a tal:condition="viewer_username" 
-            href="${request.route_url('idea_add', target=idea.idea_id)}">Add your comment.
+            href="${request.route_url('idea_add', _query={'target': idea.idea_id})}">Add your comment.
         </a>
         <span tal:condition="not viewer_username">Log in to add a comment</span>
     </p>
@@ -50,8 +50,8 @@
                 <a href="${request.route_url('idea', idea_id=comment.idea_id)}" class="idea">
                     ${comment.title}
                 </a>, by 
-                <a class="byline" href="${request.route_url('user', username=comment.users.username)}">
-                    ${comment.users.name}
+                <a class="byline" href="${request.route_url('user', username=comment.author.username)}">
+                    ${comment.author.name}
                 </a>
                 <span class="hits">${comment.hits}</span> hits,
                 <span class="misses">${comment.misses}</span> misses.

@@ -10,8 +10,8 @@
             <a href="${request.route_url('idea', idea_id=target.idea_id)}">
                 ${target.title}
             </a>, by 
-            <a href="${request.route_url('user', username=target.users.username)}">
-                ${target.users.name}
+            <a href="${request.route_url('user', username=target.author.username)}">
+                ${target.author.name}
             </a>.
         </p>
     </div>
