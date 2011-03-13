@@ -229,14 +229,6 @@ def tag_view(request):
         'ideas': ideas,
     }
 
-def toolbar_view(request):
-    viewer_username = authenticated_userid(request)
-    return render(
-        'templates/toolbar.pt',
-        {'viewer_username': viewer_username}, 
-        request
-    )
-
 
 @view_config(permission='view', route_name='about',
              renderer='templates/about.pt')
@@ -247,11 +239,6 @@ def about_view(context, request):
         'latest': latest_view(request),
         'login_form': login_form_view(request),
     }
-
-
-def login_form_view(request):
-    logged_in = authenticated_userid(request)
-    return render('templates/login.pt', {'loggedin': logged_in}, request)
 
 
 @view_config(permission='view', route_name='login')
@@ -280,6 +267,21 @@ def logout_view(request):
     headers = forget(request)
     return HTTPFound(location=request.route_url('main'),
                      headers=headers)
+
+
+def toolbar_view(request):
+    viewer_username = authenticated_userid(request)
+    return render(
+        'templates/toolbar.pt',
+        {'viewer_username': viewer_username}, 
+        request
+    )
+
+
+def login_form_view(request):
+    logged_in = authenticated_userid(request)
+    return render('templates/login.pt', {'loggedin': logged_in}, request)
+
 
 def latest_view(request):
     latest = Idea.ideas_bunch(Idea.idea_id.desc())
