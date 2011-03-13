@@ -7,6 +7,7 @@
 *$py.class
 *.pt.py
 *.txt.py
+*.swp
 .coverage
 env26/
 env24/
