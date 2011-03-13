@@ -1,102 +1,64 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:tal="http://xml.zope.org/namespaces/tal">
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <link href="${request.static_url('shootout:static/default.css')}" rel="stylesheet" type="text/css" />
-        <title>Shootout</title>
-    </head>
-    <body>
-        <div id="wrapper">
-            <div id="header">
-                <h1>Shootout</h1>
-                <h2>Pyramid web framework demo app</h2>
-            </div>
-            <div id="menu">
-                <ul>
-                    <li><a href="${request.route_url('main')}">Home</a></li>
-                </ul>
-            </div>
-            <div id="content">
-                <div id="sidebar">
-                    <div tal:replace="structure login_form" />
-                    <div tal:replace="structure cloud" />
-                    <div tal:replace="structure latest" />
-                </div>
-                <div id="main">
-                    <div tal:replace="structure toolbar" />
-                    <div id="message" tal:condition="request.session.peek_flash()">
-                        <p tal:repeat="message request.session.pop_flash()">
-                            ${message}
-                        </p>
-                    </div>
-                    <div id="sections">
-                        <h1>${idea.title}</h1>
-                        <p>Tags: 
-                            <ul class="tag-list">
-                                <li tal:repeat="tag idea.tags">
-                                    <a href="${request.route_url('tag', tag_name=tag.name)}">
-                                        ${tag.name}
-                                    </a>
-                                </li>
-                            </ul>
-                        </p>
-                        <p>By 
-                            <a class="byline" href="${request.route_url('user', username=idea.author.username)}">
-                                ${idea.author.name}
-                            </a>.
-                        </p>
-                        <p>Hits: <b class="hits">${idea.hits}</b>.</p>
-                        <p>Misses: <b class="misses">${idea.misses}</b>.</p>
-                        <p class="idea-text" tal:content="idea.text"></p>
-                        <div tal:condition="voted">
-                            <p>You already voted <b>${voted}</b> for this idea.</p>
-                        </div>
-                        <div tal:condition="voted is None and viewer_username">
-                            <form action="${app_url}/idea_vote" method="post">
-                                <input type="hidden" name="target" value="${idea.idea_id}" />
-                                <input type="submit" class="submit" name="form.vote_hit" value="Hit" />
-                                <input type="submit" class="submit" name="form.vote_miss" value="Miss" />
-                            </form>
-                        </div>
-                        <p>
-                            <a tal:condition="viewer_username" 
-                                href="${request.route_url('idea_add', target=idea.idea_id)}">Add your comment.
-                            </a>
-                            <span tal:condition="not viewer_username">Log in to add a comment</span>
-                        </p>
-                        <div tal:condition="idea.comments">
-                            <h3 class="subtitle">Comments</h3>
-                            <ul>
-                                <li tal:repeat="comment idea.comments">
-                                    <span class="tags">
-                                        <a tal:repeat="tag comment.tags" href="${request.route_url('tag', tag_name=tag.name)}">
-                                            ${tag.name}
-                                        </a>
-                                    </span>
-                                    <a href="${request.route_url('idea', idea_id=comment.idea_id)}" class="idea">
-                                        ${comment.title}
-                                    </a>, by 
-                                    <a class="byline" href="${request.route_url('user', username=comment.users.username)}">
-                                        ${comment.users.name}
-                                    </a>
-                                    <span class="hits">${comment.hits}</span> hits,
-                                    <span class="misses">${comment.misses}</span> misses.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div style="clear: both; height: 1px;"></div>
-            </div>
-            <div id="footer">
-                <p>
-                    Copyright &copy; 2010 <a href="http://www.delaguardia.com.mx">Carlos de la Guardia</a> and Łukasz Fidosz.
-                    Powered by <a href="http://docs.pylonshq.com">Pyramid</a>.
-                    Design by <a href="http://www.sumanasa.com/">Sumanasa.com</a>.
-                </p>
-            </div>
-        </div>
-    </body>
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base.macros['layout']">
+
+<tal:block metal:fill-slot="content">
+    <h1>${idea.title}</h1>
+    <p>Tags: 
+        <ul class="tag-list">
+            <li tal:repeat="tag idea.tags">
+                <a href="${request.route_url('tag', tag_name=tag.name)}">
+                    ${tag.name}
+                </a>
+            </li>
+        </ul>
+    </p>
+    <p>By 
+        <a class="byline" href="${request.route_url('user', username=idea.author.username)}">
+            ${idea.author.name}
+        </a>.
+    </p>
+    <p>Hits: <b class="hits">${idea.hits}</b>.</p>
+    <p>Misses: <b class="misses">${idea.misses}</b>.</p>
+    <p class="idea-text" tal:content="idea.text"></p>
+    <div tal:condition="voted">
+        <p>You already voted <b>${voted}</b> for this idea.</p>
+    </div>
+    <div tal:condition="not idea.voted_users and viewer_username">
+        <form action="${request.route_url('idea_vote')}" method="post">
+            <input type="hidden" name="target" value="${idea.idea_id}" />
+            <input type="submit" class="submit" name="form.vote_hit" value="Hit" />
+            <input type="submit" class="submit" name="form.vote_miss" value="Miss" />
+        </form>
+    </div>
+    <p>
+        <a tal:condition="viewer_username" 
+            href="${request.route_url('idea_add', target=idea.idea_id)}">Add your comment.
+        </a>
+        <span tal:condition="not viewer_username">Log in to add a comment</span>
+    </p>
+    <div tal:condition="idea.comments">
+        <h3 class="subtitle">Comments</h3>
+        <ul>
+            <li tal:repeat="comment idea.comments">
+                <span class="tags">
+                    <a tal:repeat="tag comment.tags" href="${request.route_url('tag', tag_name=tag.name)}">
+                        ${tag.name}
+                    </a>
+                </span>
+                <a href="${request.route_url('idea', idea_id=comment.idea_id)}" class="idea">
+                    ${comment.title}
+                </a>, by 
+                <a class="byline" href="${request.route_url('user', username=comment.users.username)}">
+                    ${comment.users.name}
+                </a>
+                <span class="hits">${comment.hits}</span> hits,
+                <span class="misses">${comment.misses}</span> misses.
+            </li>
+        </ul>
+    </div>
+</tal:block>
+
 </html>
 

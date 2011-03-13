@@ -36,7 +36,7 @@ def main(global_config, **settings):
     config.add_route('user', '/users/{username}')
     config.add_route('tag', '/tags/{tag_name}')
     config.add_route('idea_add', '/idea_add')
-    config.add_route('idea_vote', '/idea_vote/{idea_id}')
+    config.add_route('idea_vote', '/idea_vote')
     config.add_route('register', '/register')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
