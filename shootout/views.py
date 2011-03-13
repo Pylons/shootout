@@ -198,7 +198,7 @@ def idea_view(request):
     idea = Idea.get_by_id(idea_id)
 
     viewer_username = authenticated_userid(request)
-    voted = False
+    voted = idea.user_voted(viewer_username)
     login_form = login_form_view(request)
 
     return {

@@ -23,9 +23,9 @@
     <p>Misses: <b class="misses">${idea.misses}</b>.</p>
     <p class="idea-text" tal:content="idea.text"></p>
     <div tal:condition="voted">
-        <p>You already voted <b>${voted}</b> for this idea.</p>
+        <p>You already voted for this idea.</p>
     </div>
-    <div tal:condition="not idea.voted_users and viewer_username">
+    <div tal:condition="not voted and viewer_username">
         <form action="${request.route_url('idea_vote')}" method="post">
             <input type="hidden" name="target" value="${idea.idea_id}" />
             <input type="submit" class="submit" name="form.vote_hit" value="Hit" />

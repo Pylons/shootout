@@ -139,8 +139,8 @@ class Idea(Base):
     hits = Column(Integer, default=0)
     misses = Column(Integer, default=0)
     tags = relation(Tag, secondary=ideas_tags, backref='ideas')
-    voted_users = relation(User, secondary=voted_users, backref='voted_ideas')
-
+    voted_users = relation(User, secondary=voted_users, lazy='dynamic',
+        backref='voted_ideas')
     hit_percentage = func.coalesce(hits / (hits + misses) * 100, 0)
     hit_percentage = column_property(hit_percentage.label('hit_percentage'))
 
@@ -163,8 +163,9 @@ class Idea(Base):
         q = DBSession.query(cls).join('author').filter(cls.target==None)
         return q.order_by(order_by)[:how_many]
 
-    #def user_voted(self, user_id):
-    #    self.voted_users.filter(user_id==)
+    def user_voted(self, username):
+        return bool(self.voted_users.filter_by(username=username).first())
+
 
 class RootFactory(object):
     __acl__ = [
