@@ -11,14 +11,12 @@ from string import letters
 import transaction
 
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy.orm import relation, backref, column_property
+from sqlalchemy.orm import (scoped_session, sessionmaker, relation, backref,
+                            column_property)
 from sqlalchemy.types import Integer, Unicode, UnicodeText
-
+from sqlalchemy.sql import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
-
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -138,10 +136,9 @@ class Idea(Base):
     misses = Column(Integer, default=0)
     tags = relation(Tag, secondary=ideas_tags, backref='ideas')
     voted_users = relation(User, secondary=voted_users, backref='voted_ideas')
-    hit_percentage = (hits / (hits + misses) * 100)
-    hit_percentage = column_property(
-        hit_percentage.label('hit_percentage')
-    )
+
+    hit_percentage = func.coalesce(hits / (hits + misses) * 100, 0)
+    hit_percentage = column_property(hit_percentage.label('hit_percentage'))
 
     total_votes = column_property((hits + misses).label('total_votes'))
 
@@ -162,6 +159,8 @@ class Idea(Base):
         q = DBSession.query(cls).join('author').filter(cls.target==None)
         return q.order_by(order_by)[:how_many]
 
+    #def user_voted(self, user_id):
+    #    self.voted_users.filter(user_id==)
 
 class RootFactory(object):
     __acl__ = [
