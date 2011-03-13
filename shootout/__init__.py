@@ -26,36 +26,22 @@ def main(global_config, **settings):
         authorization_policy=authz_policy,
         session_factory=session_factory
     )
+
     config.add_static_view('static', 'shootout:static')
-    config.add_route('idea', '/ideas/{idea_id}',
-                     view='shootout.views.idea_view',
-                     view_renderer='templates/idea.pt')
-    config.add_route('user', '/users/{username}',
-                     view='shootout.views.user_view',
-                     view_renderer='templates/user.pt')
-    config.add_route('tag', '/tags/{tag_name}',
-                     view='shootout.views.tag_view',
-                     view_renderer='templates/tag.pt')
-    config.add_route('idea_add', '/idea_add',
-                     view='shootout.views.idea_add',
-                     view_permission='post',
-                     view_renderer='templates/idea_add.pt')
-    config.add_route('idea_vote', '/idea_vote/{idea_id}',
-                     view_permission = 'post',
-                     view='shootout.views.idea_vote')
-    config.add_route('register', '/register',
-                     view='shootout.views.user_add',
-                     view_renderer='templates/user_add.pt')
-    config.add_route('login', '/login',
-                     view='shootout.views.login_view')
-    config.add_route('logout', '/logout',
-                     view='shootout.views.logout_view')
-    config.add_route('about', '/about',
-                     view='shootout.views.about_view',
-                     view_renderer='templates/about.pt')
-    config.add_route('main', '/',
-                     view='shootout.views.main_view',
-                     view_renderer='templates/main.pt')
+
+    config.add_route('idea', '/ideas/{idea_id}')
+    config.add_route('user', '/users/{username}')
+    config.add_route('tag', '/tags/{tag_name}')
+    config.add_route('idea_add', '/idea_add')
+    config.add_route('idea_vote', '/idea_vote/{idea_id}')
+    config.add_route('register', '/register')
+    config.add_route('login', '/login')
+    config.add_route('logout', '/logout')
+    config.add_route('about', '/about')
+    config.add_route('main', '/')
+
+    config.scan()
+
     return config.make_wsgi_app()
 
 

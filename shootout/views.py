@@ -3,6 +3,7 @@ from operator import itemgetter
 
 import formencode
 
+from pyramid.view import view_config
 from pyramid.renderers import render_to_response, render
 from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound
 from pyramid.security import authenticated_userid, remember, forget
@@ -11,6 +12,8 @@ from shootout.models import DBSession
 from shootout.models import User, Idea, Tag
 
 
+@view_config(permission='view', route_name='main',
+             renderer='templates/main.pt')
 def main_view(request):
     hitpct = Idea.ideas_bunch(Idea.hit_percentage.desc())
     top = Idea.ideas_bunch(Idea.hits.desc())
@@ -36,6 +39,7 @@ def main_view(request):
     }
 
 
+@view_config(permission='post', route_name='idea_vote')
 def idea_vote(request):
     params = request.params
     target = params.get('target')
@@ -79,6 +83,8 @@ class Registration(formencode.Schema):
     ]
 
 
+@view_config(permission='view', route_name='register',
+             renderer='templates/user_add.pt')
 def user_add(request):
     post_data = request.POST
     if 'form.submitted' in post_data:
@@ -122,6 +128,8 @@ class AddIdea(formencode.Schema):
     tags = formencode.validators.String(not_empty=True)
 
 
+@view_config(permission='post', route_name='idea_add',
+             renderer='templates/idea_add.pt')
 def idea_add(request):
     post_data = request.POST
     session = DBSession()
@@ -169,7 +177,8 @@ def idea_add(request):
         'kind': kind,
     }
 
-
+@view_config(permission='view', route_name='user',
+             renderer='templates/user.pt')
 def user_view(request):
     username = request.matchdict['username']
     user = User.get_by_username(username)
@@ -183,6 +192,8 @@ def user_view(request):
     }
 
 
+@view_config(permission='view', route_name='idea',
+             renderer='templates/idea.pt')
 def idea_view(request):
     idea_id = request.matchdict['idea_id']
     idea = Idea.get_by_id(idea_id)
@@ -202,6 +213,8 @@ def idea_view(request):
     }
 
 
+@view_config(permission='view', route_name='tag',
+             renderer='templates/tag.pt')
 def tag_view(request):
     tagname = request.matchdict['tagname']
     ideas = Idea.get_by_tagname(tagname)
@@ -224,6 +237,9 @@ def toolbar_view(request):
         request
     )
 
+
+@view_config(permission='view', route_name='about',
+             renderer='templates/about.pt')
 def about_view(context, request):
     return {
         'toolbar': toolbar_view(request),
@@ -238,6 +254,7 @@ def login_form_view(request):
     return render('templates/login.pt', {'loggedin': logged_in}, request)
 
 
+@view_config(permission='view', route_name='login')
 def login_view(request):
     main_view = request.route_url('main')
     came_from = request.params.get('came_from', main_view)
@@ -256,6 +273,7 @@ def login_view(request):
     return HTTPFound(location=came_from)
 
 
+@view_config(permission='post', route_name='logout')
 def logout_view(request):
     request.session.invalidate()
     request.session.flash('Logged out successfully.')
