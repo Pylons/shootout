@@ -27,6 +27,9 @@ def main(global_config, **settings):
         session_factory=session_factory
     )
 
+    config.add_subscriber('shootout.subscribers.add_base_template',
+                          'pyramid.events.BeforeRender')
+
     config.add_static_view('static', 'shootout:static')
 
     config.add_route('idea', '/ideas/{idea_id}')

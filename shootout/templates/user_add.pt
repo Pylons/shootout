@@ -1,25 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:tal="http://xml.zope.org/namespaces/tal">
-     <head>
-         <title>Shootout</title>
-     </head>
-    <body>
-    <div id="menu">
-        <ul>
-            <li><a href="${request.route_url('main')}">Home</a></li>
-            <li><a href="${request.route_url('about')}">About this demo</a></li>
-        </ul>
-    </div>
-    <div tal:replace="structure toolbar" />
-    <div tal:replace="structure cloud" />
-    <div tal:replace="structure latest" />
-    <div tal:replace="structure login_form" />
-    <div id="message" tal:condition="request.session.peek_flash()">-->
-        <p tal:repeat="message request.session.pop_flash()">
-            ${message}
-        </p>
-    </div>
-    <div id="sections">
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base.macros['layout']">
+
+<tal:block metal:fill-slot="content">
     <h1>Register</h1>
     <form action="register" method="post">
         <fieldset>
@@ -41,6 +25,6 @@
             <input type="submit" class="submit" name="form.submitted" value="Register" />
         </fieldset>
     </form>
-    </div>
-</body>
+</tal:block>
+
 </html>

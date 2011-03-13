@@ -1,20 +1,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-     xmlns:tal="http://xml.zope.org/namespaces/tal">
-     <head>
-         <title>Shootout</title>
-     </head>
-    <body>
-    <div id="menu">
-        <ul>
-            <li><a href="${app_url}">Home</a></li>
-            <li><a href="${app_url}/about">About this demo</a></li>
-        </ul>
-    </div>
-    <div tal:replace="structure toolbar" />
-    <div tal:replace="structure cloud" />
-    <div tal:replace="structure latest" />
-    <div tal:replace="structure login_form" />
-    <div id="sections">
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      metal:use-macro="base.macros['layout']">
+
+<tal:block metal:fill-slot="content">
     <h1>${user.name}</h1>
     <p>login: <b class="byline">${user.username}</b>.</p>
     <h3 class="subtitle">Performance</h3>
@@ -23,6 +12,6 @@
     <h3 class="subtitle">Vote history</h3>
     <p>Hits: <b class="hits">${user.delivered_hits}</b>.</p>
     <p>Misses: <b class="misses">${user.delivered_misses}</b>.</p>
-    </div>
-</body>
+</tal:block>
+
 </html>

@@ -216,7 +216,7 @@ def idea_view(request):
 @view_config(permission='view', route_name='tag',
              renderer='templates/tag.pt')
 def tag_view(request):
-    tagname = request.matchdict['tagname']
+    tagname = request.matchdict['tag_name']
     ideas = Idea.get_by_tagname(tagname)
     login_form = login_form_view(request)
     return {

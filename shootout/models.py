@@ -47,7 +47,7 @@ class User(Base):
     hits = Column(Integer, default=0)
     misses = Column(Integer, default=0)
     delivered_hits = Column(Integer, default=0)
-    delivered_missed = Column(Integer, default=0)
+    delivered_misses = Column(Integer, default=0)
 
     def __init__(self, username, password, name, email):
         self.username = username
