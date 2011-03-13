@@ -17,6 +17,7 @@
             <div id="menu">
                 <ul>
                     <li><a href="${request.route_url('main')}">Home</a></li>
+                    <li><a href="${request.route_url('about')}">About this demo</a></li>
                 </ul>
             </div>
             <div id="content">
