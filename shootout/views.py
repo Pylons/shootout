@@ -7,6 +7,7 @@ from pyramid_simpleform import Form
 from pyramid_simpleform.renderers import FormRenderer
 
 from pyramid.view import view_config
+from pyramid.url import route_url
 from pyramid.renderers import render_to_response, render
 from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound, HTTPNotFound
 from pyramid.security import authenticated_userid, remember, forget
@@ -70,7 +71,7 @@ def idea_vote(request):
 
     session.flush()
 
-    redirect_url = request.route_url('idea', idea_id=idea.idea_id)
+    redirect_url = route_url('idea', request, idea_id=idea.idea_id)
     response = HTTPMovedPermanently(location=redirect_url)
 
     return response
@@ -108,7 +109,7 @@ def user_add(request):
 
         headers = remember(request, username)
 
-        redirect_url = request.route_url('main')
+        redirect_url = route_url('main', request)
 
         return HTTPFound(location=redirect_url, headers=headers)
 
@@ -163,7 +164,7 @@ def idea_add(request):
             idea.tags = tags
 
         session.add(idea)            
-        redirect_url = request.route_url('idea', idea_id=idea.idea_id)
+        redirect_url = route_url('idea', request, idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
 
@@ -245,7 +246,7 @@ def about_view(context, request):
 
 @view_config(permission='view', route_name='login')
 def login_view(request):
-    main_view = request.route_url('main')
+    main_view = route_url('main', request)
     came_from = request.params.get('came_from', main_view)
 
     params = request.params
@@ -267,7 +268,7 @@ def logout_view(request):
     request.session.invalidate()
     request.session.flash('Logged out successfully.')
     headers = forget(request)
-    return HTTPFound(location=request.route_url('main'),
+    return HTTPFound(location=route_url('main', request),
                      headers=headers)
 
 
