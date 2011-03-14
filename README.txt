@@ -26,6 +26,8 @@ Installing and Running
 
 #. cd env
 
+#. . bin/activate
+
 #. git clone git@github.com:Pylons/shootout.git
 
 #. cd shootout

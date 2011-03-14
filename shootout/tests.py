@@ -11,6 +11,7 @@ def _initTestingDB():
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
+    return DBSession
 
 def _registerRoutes(config):
     config.add_route('idea', '/ideas/{idea_id}')
@@ -40,26 +41,21 @@ class ViewTests(unittest.TestCase):
         transaction.abort()
         testing.tearDown()
 
-
-    def _addUser(self, username='username'):
+    def _addUser(self, username=u'username'):
         from shootout.models import User
-        from shootout.models import DBSession
-        session = DBSession()
-        user = User(username=username, password='password', name='name',
-                    email='email')
-        session.add(user)
-        session.flush()
+        user = User(username=username, password=u'password', name=u'name',
+                    email=u'email')
+        self.session.add(user)
+        self.session.flush()
         return user
 
     def _addIdea(self, target=None):
         from shootout.models import Idea
-        from shootout.models import DBSession
-        session = DBSession()
         user = self._addUser()
-        idea = Idea(target=target, author=user, title='title',
-                    text='text')
-        session.add(idea)
-        session.flush()
+        idea = Idea(target=target, author=user, title=u'title',
+                    text=u'text')
+        self.session.add(idea)
+        self.session.flush()
         return idea
         
     def test_main_view(self):
@@ -93,41 +89,45 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy('username')
+        _registerCommonTemplates(self.config)
         _registerRoutes(self.config)
-        idea = self._addIdea()
-        request = testing.DummyRequest(
-            params={'target': idea.idea_id, 'form.submitted': True}
-        )
+        request = testing.DummyRequest(post={'form.submitted': 'Shoot'})
         result = idea_add(request)
-        self.assertEqual(result.status, '302 Found')
+        self.assertEqual(
+            result['form'].form.errors,
+            {
+                'text': u'Missing value',
+                'tags': u'Missing value',
+                'title': u'Missing value'
+            }
+        )
 
-    #def test_idea_add_submit_schema_succeed(self):
-    #    from shootout.views import idea_add
-    #    from shootout.models import DBSession
-    #    from shootout.models import Idea
-    #    self.config.testing_securitypolicy('username')
-    #    request = testing.DummyRequest(
-    #        params={
-    #        'form.submitted':True,
-    #        'tags':'abc def',
-    #        'text':'My idea is cool',
-    #        'title':'My idea'
-    #        }
-    #        )
-    #    context = testing.DummyModel()
-    #    user = self._addUser('username')
-    #    response = idea_add(context, request)
-    #    self.assertEqual(response.status, '302 Found')
-    #    self.assertEqual(response.location, 'http://example.com/ideas/1')
-    #    session = DBSession()
-    #    result = list(session.query(Idea))
-    #    self.assertEqual(len(result), 1)
-    #    idea = result[0]
-    #    self.assertEqual(idea.idea_id, 1)
-    #    self.assertEqual(idea.text, 'My idea is cool')
-    #    self.assertEqual(idea.title, 'My idea')
-    #    self.assertEqual(idea.author, user.user_id)
-    #    self.assertEqual(len(idea.tags), 2)
-    #    self.assertEqual(idea.tags[0].name, 'abc')
-    #    self.assertEqual(idea.tags[1].name, 'def')
+    def test_idea_add_submit_schema_succeed(self):
+        from shootout.views import idea_add
+        from shootout.models import Idea
+        self.config.testing_securitypolicy('username')
+        _registerCommonTemplates(self.config)
+        _registerRoutes(self.config)
+        request = testing.DummyRequest(
+            post={
+                'form.submitted': u'Shoot',
+                'tags': u'abc def, bar',
+                'text': u'My idea is cool',
+                'title': u'My idea',
+            }
+        )
+        user = self._addUser('username')
+        result = idea_add(request)
+        self.assertEqual(result.location, 'http://example.com/ideas/1')
+        ideas = self.session.query(Idea).all()
+        self.assertEqual(len(ideas), 1)
+        idea = ideas[0]
+        self.assertEqual(idea.idea_id, 1)
+        self.assertEqual(idea.text, u'My idea is cool')
+        self.assertEqual(idea.title, u'My idea')
+        self.assertEqual(idea.author, user)
+        self.assertEqual(len(idea.tags), 3)
+        self.assertEqual(idea.tags[0].name, u'abc')
+        self.assertEqual(idea.tags[1].name, u'bar')
+        self.assertEqual(idea.tags[2].name, u'def')
 

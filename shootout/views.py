@@ -96,7 +96,7 @@ def user_add(request):
 
     form = Form(request, schema=RegistrationSchema)
 
-    if 'form.submitted' in request.params and form.validate():
+    if 'form.submitted' in request.POST and form.validate():
         session = DBSession()
         username=form.data['username']
         user = User(
@@ -134,8 +134,7 @@ class AddIdeaSchema(formencode.Schema):
 @view_config(permission='post', route_name='idea_add',
              renderer='templates/idea_add.pt')
 def idea_add(request):
-    params = request.params
-    target = params.get('target')
+    target = request.GET.get('target')
     session = DBSession()
 
     if target:
@@ -148,7 +147,7 @@ def idea_add(request):
 
     form = Form(request, schema=AddIdeaSchema)
 
-    if params.get('form.submitted') and form.validate():
+    if 'form.submitted' in request.POST and form.validate():
         author_username = authenticated_userid(request)
         author = User.get_by_username(author_username)
 
