@@ -32,7 +32,7 @@ Installing and Running
 
 #. cd shootout
 
-#. ../bin/python setup.py develop
+#. python setup.py develop
 
-#. ../bin/paster serve development.ini
+#. paster serve development.ini
 
