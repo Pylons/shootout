@@ -47,21 +47,21 @@ def main_view(request):
 
 @view_config(permission='post', route_name='idea_vote')
 def idea_vote(request):
-    params = request.params
-    target = params.get('target')
+    post_data = request.POST
+    target = post_data.get('target')
     session = DBSession()
 
     idea = Idea.get_by_id(target)
     voter_username = authenticated_userid(request)
     voter = User.get_by_username(voter_username)
 
-    if params.get('form.vote_hit'):
+    if post_data.get('form.vote_hit'):
         vote = 'hit'
         idea.hits += 1
         idea.author.hits += 1
         voter.delivered_hits += 1
 
-    elif params.get('form.vote_miss'):
+    elif post_data.get('form.vote_miss'):
         vote = 'miss'
         idea.misses += 1
         idea.author.misses += 1
@@ -136,7 +136,6 @@ class AddIdeaSchema(formencode.Schema):
 def idea_add(request):
     target = request.GET.get('target')
     session = DBSession()
-
     if target:
         target = Idea.get_by_id(target)
         if not target:
@@ -223,7 +222,6 @@ def tag_view(request):
     login_form = login_form_view(request)
     return {
         'tag': tagname,
-        'app_url': request.application_url,
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
         'latest': latest_view(request),

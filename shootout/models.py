@@ -152,7 +152,7 @@ class Idea(Base):
 
     @classmethod
     def get_by_id(cls, idea_id):
-        return DBSession.query(cls).filter(cls.idea_id==idea_id).one()
+        return DBSession.query(cls).filter(cls.idea_id==idea_id).first()
 
     @classmethod
     def get_by_tagname(cls, tag_name):

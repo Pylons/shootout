@@ -49,9 +49,10 @@ class ViewTests(unittest.TestCase):
         self.session.flush()
         return user
 
-    def _addIdea(self, target=None):
+    def _addIdea(self, target=None, user=None):
         from shootout.models import Idea
-        user = self._addUser()
+        if not user:
+            user = self._addUser()
         idea = Idea(target=target, author=user, title=u'title',
                     text=u'text')
         self.session.add(idea)
@@ -81,10 +82,20 @@ class ViewTests(unittest.TestCase):
         self.config.testing_securitypolicy('username')
         _registerCommonTemplates(self.config)
         idea = self._addIdea()
-        request = testing.DummyRequest({'target': idea.idea_id})
+        request = testing.DummyRequest(params={'target': idea.idea_id})
         result = idea_add(request)
         self.assertEqual(result['target'], idea)
         self.assertEqual(result['kind'], 'comment')
+
+    def test_idea_add_not_existing_target(self):
+        from shootout.views import idea_add
+        from pyramid.httpexceptions import HTTPNotFound
+        self.config.testing_securitypolicy('username')
+        _registerCommonTemplates(self.config)
+        request = testing.DummyRequest(params={'target': 100})
+        result = idea_add(request)
+        self.assertEqual(result.code, 404)
+
 
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
@@ -106,7 +117,6 @@ class ViewTests(unittest.TestCase):
         from shootout.views import idea_add
         from shootout.models import Idea
         self.config.testing_securitypolicy('username')
-        _registerCommonTemplates(self.config)
         _registerRoutes(self.config)
         request = testing.DummyRequest(
             post={
@@ -116,7 +126,7 @@ class ViewTests(unittest.TestCase):
                 'title': u'My idea',
             }
         )
-        user = self._addUser('username')
+        user = self._addUser(u'username')
         result = idea_add(request)
         self.assertEqual(result.location, 'http://example.com/ideas/1')
         ideas = self.session.query(Idea).all()
@@ -130,4 +140,164 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.tags[0].name, u'abc')
         self.assertEqual(idea.tags[1].name, u'bar')
         self.assertEqual(idea.tags[2].name, u'def')
+
+    def test_positive_idea_voting(self):
+        from shootout.views import idea_vote
+        from shootout.models import User
+        _registerRoutes(self.config)        
+        idea = self._addIdea()
+        user = self.session.query(User).one()
+        self.assertEqual(idea.user_voted('username'), False)
+        self.config.testing_securitypolicy('username')
+        post_data = {
+            'form.vote_hit': u'Hit',
+            'target': 1,
+        }
+        request = testing.DummyRequest(post=post_data)
+        result = idea_vote(request)
+        self.assertEqual(idea.hits, 1)
+        self.assertEqual(idea.misses, 0)
+        self.assertEqual(idea.hit_percentage, 100)
+        self.assertEqual(idea.total_votes, 1)
+        self.assertEqual(idea.vote_differential, 1)
+        self.assertEqual(idea.author.hits, 1)
+        self.assertEqual(len(idea.voted_users.all()), 1)
+        self.assertEqual(idea.voted_users.one(), user)
+        self.assertEqual(idea.user_voted('username'), True)
+
+    def test_negative_idea_voting(self):
+        from shootout.views import idea_vote
+        from shootout.models import User
+        _registerRoutes(self.config)        
+        idea = self._addIdea()
+        user = self.session.query(User).one()
+        self.assertEqual(idea.user_voted('username'), False)
+        self.config.testing_securitypolicy('username')
+        post_data = {
+            'form.vote_miss': u'Miss',
+            'target': 1,
+        }
+        request = testing.DummyRequest(post=post_data)
+        result = idea_vote(request)
+        self.assertEqual(idea.hits, 0)
+        self.assertEqual(idea.misses, 1)
+        self.assertEqual(idea.hit_percentage, 0)
+        self.assertEqual(idea.total_votes, 1)
+        self.assertEqual(idea.vote_differential, -1)
+        self.assertEqual(idea.author.hits, 0)
+        self.assertEqual(len(idea.voted_users.all()), 1)
+        self.assertEqual(idea.voted_users.one(), user)
+        self.assertEqual(idea.user_voted('username'), True)
+
+    def test_registration_nosubmit(self):
+        from shootout.views import user_add
+        _registerCommonTemplates(self.config)
+        request = testing.DummyRequest()
+        result = user_add(request)
+        self.assertEqual(result['form'].form.is_validated, False)
+
+    def test_registration_submit_empty(self):
+        from shootout.views import user_add
+        _registerCommonTemplates(self.config)
+        request = testing.DummyRequest()
+        result = user_add(request)
+        self.assertEqual(result['form'].form.is_validated, False)
+        request = testing.DummyRequest(post={'form.submitted': 'Shoot'})
+        result = user_add(request)
+        self.assertEqual(
+            result['form'].form.errors,
+            {
+                'username': u'Missing value',
+                'confirm_password': u'Missing value',
+                'password': u'Missing value',
+                'email': u'Missing value',
+                'name': u'Missing value'
+            }
+        )
+
+    def test_registration_submit_schema_succeed(self):
+        from shootout.views import user_add
+        from shootout.models import User
+        _registerRoutes(self.config)        
+        request = testing.DummyRequest(
+            post={
+                'form.submitted': u'Register',
+                'username': u'username',
+                'password': u'secret',
+                'confirm_password': u'secret',
+                'email': u'username@example.com',
+                'name': u'John Doe',
+            }
+        )
+        result = user_add(request)
+        users = self.session.query(User).all()
+        self.assertEqual(len(users), 1)
+        user = users[0]
+        self.assertEqual(user.username, 'username')
+        self.assertEqual(user.name, u'John Doe')
+        self.assertEqual(user.email, 'username@example.com')
+        self.assertEqual(user.hits, 0)
+        self.assertEqual(user.misses, 0)
+        self.assertEqual(user.delivered_hits, 0)
+        self.assertEqual(user.delivered_misses, 0)
+        #self.assertEqual(user.ideas, None)
+        self.assertEqual(user.voted_ideas, [])
+
+    def test_user_view(self):
+        from shootout.views import user_view
+        self.config.testing_securitypolicy('username')
+        _registerRoutes(self.config)
+        _registerCommonTemplates(self.config)
+        request = testing.DummyRequest()
+        request.matchdict = {'username': 'username'}
+        user = self._addUser()
+        result = user_view(request)
+        self.assertEqual(result['user'].username, 'username')
+        self.assertEqual(result['user'].user_id, 1)
+
+    def test_idea_view(self):
+        from shootout.views import idea_view
+        self.config.testing_securitypolicy('username')
+        _registerRoutes(self.config)
+        _registerCommonTemplates(self.config)
+        self._addIdea()
+        request = testing.DummyRequest()
+        request.matchdict = {'idea_id': 1}
+        result = idea_view(request)
+        self.assertEqual(result['idea'].title, u'title')
+        self.assertEqual(result['idea'].idea_id, 1)
+        self.assertEqual(result['viewer_username'], u'username')
+
+    def test_tag_view(self):
+        from shootout.views import tag_view
+        from shootout.models import Tag, Idea
+        self.config.testing_securitypolicy('username')
+        _registerRoutes(self.config)
+        _registerCommonTemplates(self.config)
+        user = self._addUser()
+        tag1 = Tag('bar')
+        tag2 = Tag('foo')
+        self.session.add_all([tag1, tag2])
+        idea1 = self._addIdea(user=user)
+        idea1.tags.append(tag1)
+        idea2 = self._addIdea(user=user)
+        idea2.tags.append(tag1)
+        idea3 = self._addIdea(user=user)
+        idea3.tags.append(tag2)
+        self.session.flush()
+        
+        request = testing.DummyRequest()
+        request.matchdict = {'tag_name': 'bar'}
+        result = tag_view(request)
+        ideas = result['ideas'].all()
+        self.assertEqual(ideas[0].idea_id, idea1.idea_id)
+        self.assertEqual(ideas[1].idea_id, idea2.idea_id)
+        self.assertEqual(result['tag'], 'bar')
+
+        request = testing.DummyRequest()
+        request.matchdict = {'tag_name': 'foo'}
+        result = tag_view(request)
+        self.assertEqual(result['ideas'].one().idea_id, idea3.idea_id)
+        self.assertEqual(result['tag'], 'foo')
+
 
