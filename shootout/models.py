@@ -132,8 +132,7 @@ class Idea(Base):
     comments = relation('Idea', cascade="delete",
         backref=backref('target', remote_side=idea_id))
     author_id = Column(Integer, ForeignKey('users.user_id'))
-    author = relation(User, cascade="delete",
-        backref=backref('ideas', order_by=User.username))
+    author = relation(User, cascade="delete", backref='ideas')
     title = Column(UnicodeText)
     text = Column(UnicodeText)
     hits = Column(Integer, default=0)
