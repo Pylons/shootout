@@ -65,7 +65,7 @@ class User(Base):
         user = cls.get_by_username(username)
         if not user:
             return False
-        return crypt.check(password, user.password)
+        return crypt.check(user.password, password)
 
 
 ideas_tags = Table('ideas_tags', Base.metadata,
