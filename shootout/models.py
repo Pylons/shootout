@@ -1,13 +1,3 @@
-try:
-    import hashlib
-    sha1 = hashlib.sha1
-except ImportError:
-    import sha
-    sha1 = sha.new
-
-from random import sample
-from string import letters
-
 import cryptacular.bcrypt
 
 import transaction
