@@ -62,16 +62,16 @@ class ViewTests(unittest.TestCase):
         
     def test_main_view(self):
         from shootout.views import main_view
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
         result = main_view(request)
-        self.assertEqual(result['username'], 'username')
+        self.assertEqual(result['username'], u'username')
         self.assertEqual(len(result['toplists']), 4)
 
     def test_idea_add_nosubmit_idea(self):
         from shootout.views import idea_add
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
         result = idea_add(request)
@@ -80,7 +80,7 @@ class ViewTests(unittest.TestCase):
         
     def test_idea_add_nosubmit_comment(self):
         from shootout.views import idea_add
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerCommonTemplates(self.config)
         idea = self._addIdea()
         request = testing.DummyRequest(params={'target': idea.idea_id})
@@ -90,7 +90,7 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_not_existing_target(self):
         from shootout.views import idea_add
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest(params={'target': 100})
         result = idea_add(request)
@@ -99,7 +99,7 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerCommonTemplates(self.config)
         _registerRoutes(self.config)
         request = testing.DummyRequest(post={'form.submitted': 'Shoot'})
@@ -116,7 +116,7 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_submit_schema_succeed(self):
         from shootout.views import idea_add
         from shootout.models import Idea
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerRoutes(self.config)
         request = testing.DummyRequest(
             post={
@@ -147,8 +147,8 @@ class ViewTests(unittest.TestCase):
         _registerRoutes(self.config)        
         idea = self._addIdea()
         user = self.session.query(User).one()
-        self.assertEqual(idea.user_voted('username'), False)
-        self.config.testing_securitypolicy('username')
+        self.assertEqual(idea.user_voted(u'username'), False)
+        self.config.testing_securitypolicy(u'username')
         post_data = {
             'form.vote_hit': u'Hit',
             'target': 1,
@@ -163,7 +163,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.author.hits, 1)
         self.assertEqual(len(idea.voted_users.all()), 1)
         self.assertEqual(idea.voted_users.one(), user)
-        self.assertTrue(idea.user_voted('username'))
+        self.assertTrue(idea.user_voted(u'username'))
 
     def test_negative_idea_voting(self):
         from shootout.views import idea_vote
@@ -171,8 +171,8 @@ class ViewTests(unittest.TestCase):
         _registerRoutes(self.config)        
         idea = self._addIdea()
         user = self.session.query(User).one()
-        self.assertEqual(idea.user_voted('username'), False)
-        self.config.testing_securitypolicy('username')
+        self.assertEqual(idea.user_voted(u'username'), False)
+        self.config.testing_securitypolicy(u'username')
         post_data = {
             'form.vote_miss': u'Miss',
             'target': 1,
@@ -187,7 +187,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.author.hits, 0)
         self.assertEqual(len(idea.voted_users.all()), 1)
         self.assertEqual(idea.voted_users.one(), user)
-        self.assertTrue(idea.user_voted('username'))
+        self.assertTrue(idea.user_voted(u'username'))
 
     def test_registration_nosubmit(self):
         from shootout.views import user_add
@@ -245,19 +245,19 @@ class ViewTests(unittest.TestCase):
 
     def test_user_view(self):
         from shootout.views import user_view
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerRoutes(self.config)
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
-        request.matchdict = {'username': 'username'}
+        request.matchdict = {'username': u'username'}
         self._addUser()
         result = user_view(request)
-        self.assertEqual(result['user'].username, 'username')
+        self.assertEqual(result['user'].username, u'username')
         self.assertEqual(result['user'].user_id, 1)
 
     def test_idea_view(self):
         from shootout.views import idea_view
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerRoutes(self.config)
         _registerCommonTemplates(self.config)
         self._addIdea()
@@ -271,7 +271,7 @@ class ViewTests(unittest.TestCase):
     def test_tag_view(self):
         from shootout.views import tag_view
         from shootout.models import Tag
-        self.config.testing_securitypolicy('username')
+        self.config.testing_securitypolicy(u'username')
         _registerRoutes(self.config)
         _registerCommonTemplates(self.config)
         user = self._addUser()

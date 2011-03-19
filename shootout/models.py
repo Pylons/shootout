@@ -28,7 +28,7 @@ Base = declarative_base()
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
 def hash_password(password):
-    return crypt.encode(password)
+    return unicode(crypt.encode(password))
 
 class User(Base):
     """
