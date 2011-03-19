@@ -8,10 +8,11 @@ def _initTestingDB():
     from shootout.models import Base
     from sqlalchemy import create_engine
     engine = create_engine('sqlite://')
-    DBSession.configure(bind=engine)
+    session = DBSession()
+    session.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
-    return DBSession
+    return session
 
 def _registerRoutes(config):
     config.add_route('idea', '/ideas/{idea_id}')
