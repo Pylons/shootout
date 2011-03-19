@@ -232,7 +232,7 @@ def tag_view(request):
 
 @view_config(permission='view', route_name='about',
              renderer='templates/about.pt')
-def about_view(context, request):
+def about_view(request):
     return {
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
@@ -246,24 +246,24 @@ def login_view(request):
     main_view = route_url('main', request)
     came_from = request.params.get('came_from', main_view)
 
-    params = request.params
-    if 'submit' in params:
-        login = params['login']
-        password = params['password']
+    post_data = request.POST
+    if 'submit' in post_data:
+        login = post_data['login']
+        password = post_data['password']
 
         if User.check_password(login, password):
             headers = remember(request, login)
-            request.session.flash('Logged in successfully.')
+            request.session.flash(u'Logged in successfully.')
             return HTTPFound(location=came_from, headers=headers)
     
-    request.session.flash('Failed to login.')
+    request.session.flash(u'Failed to login.')
     return HTTPFound(location=came_from)
 
 
 @view_config(permission='post', route_name='logout')
 def logout_view(request):
     request.session.invalidate()
-    request.session.flash('Logged out successfully.')
+    request.session.flash(u'Logged out successfully.')
     headers = forget(request)
     return HTTPFound(location=route_url('main', request),
                      headers=headers)

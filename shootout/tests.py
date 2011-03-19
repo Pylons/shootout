@@ -163,7 +163,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.author.hits, 1)
         self.assertEqual(len(idea.voted_users.all()), 1)
         self.assertEqual(idea.voted_users.one(), user)
-        self.assertEqual(idea.user_voted('username'), True)
+        self.assertTrue(idea.user_voted('username'))
 
     def test_negative_idea_voting(self):
         from shootout.views import idea_vote
@@ -187,21 +187,21 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.author.hits, 0)
         self.assertEqual(len(idea.voted_users.all()), 1)
         self.assertEqual(idea.voted_users.one(), user)
-        self.assertEqual(idea.user_voted('username'), True)
+        self.assertTrue(idea.user_voted('username'))
 
     def test_registration_nosubmit(self):
         from shootout.views import user_add
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
         result = user_add(request)
-        self.assertEqual(result['form'].form.is_validated, False)
+        self.assertTrue('form' in result)
 
     def test_registration_submit_empty(self):
         from shootout.views import user_add
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
         result = user_add(request)
-        self.assertEqual(result['form'].form.is_validated, False)
+        self.assertTrue('form' in result)
         request = testing.DummyRequest(post={'form.submitted': 'Shoot'})
         result = user_add(request)
         self.assertEqual(
@@ -240,7 +240,7 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(user.misses, 0)
         self.assertEqual(user.delivered_hits, 0)
         self.assertEqual(user.delivered_misses, 0)
-        #self.assertEqual(user.ideas, None)
+        self.assertEqual(user.ideas, [])
         self.assertEqual(user.voted_ideas, [])
 
     def test_user_view(self):
@@ -300,4 +300,47 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(result['ideas'].one().idea_id, idea3.idea_id)
         self.assertEqual(result['tag'], 'foo')
 
+    def test_about_view(self):
+        from shootout.views import about_view
+        _registerCommonTemplates(self.config)
+        request = testing.DummyRequest()
+        about_view(request)
 
+    def test_login_view_submit_fail(self):
+        from shootout.views import login_view
+        _registerRoutes(self.config)
+        self._addUser()
+        request = testing.DummyRequest(
+            post={
+                'submit': u'Login',
+                'login': u'username',
+                'password': u'wrongpassword',
+            }
+        )
+        result = login_view(request)
+        messages = request.session.peek_flash()
+        self.assertEqual(messages, [u'Failed to login.'])
+
+
+    def test_login_view_submit_success(self):
+        from shootout.views import login_view
+        _registerRoutes(self.config)
+        self._addUser()
+        request = testing.DummyRequest(
+            post={
+                'submit': u'Login',
+                'login': u'username',
+                'password': u'password',
+            }
+        )
+        result = login_view(request)
+        messages = request.session.peek_flash()
+        self.assertEqual(messages, [u'Logged in successfully.'])
+
+    def test_logout_view(self):
+        from shootout.views import logout_view
+        _registerRoutes(self.config)
+        request = testing.DummyRequest()
+        result = logout_view(request)
+        messages = request.session.peek_flash()
+        self.assertEqual(messages, [u'Logged out successfully.'])
