@@ -1,13 +1,18 @@
 import cryptacular.bcrypt
 
-import transaction
-
-from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy.orm import (scoped_session, sessionmaker, relation, backref,
-                            column_property, synonym)
-from sqlalchemy.types import Integer, Unicode, UnicodeText
+from sqlalchemy import Table
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import relation
+from sqlalchemy.orm import backref
+from sqlalchemy.orm import column_property
+from sqlalchemy.orm import synonym
+from sqlalchemy.types import Integer
+from sqlalchemy.types import Unicode
+from sqlalchemy.types import UnicodeText
 from sqlalchemy.sql import func
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 
 from zope.sqlalchemy import ZopeTransactionExtension

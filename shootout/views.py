@@ -8,10 +8,11 @@ from pyramid_simpleform.renderers import FormRenderer
 
 from pyramid.view import view_config
 from pyramid.url import route_url
-from pyramid.renderers import render_to_response, render
-from pyramid.httpexceptions import HTTPMovedPermanently, HTTPFound, HTTPNotFound
+from pyramid.renderers import render
+from pyramid.httpexceptions import HTTPMovedPermanently
+from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import authenticated_userid, remember, forget
-
 
 
 from shootout.models import DBSession
@@ -56,13 +57,11 @@ def idea_vote(request):
     voter = User.get_by_username(voter_username)
 
     if post_data.get('form.vote_hit'):
-        vote = 'hit'
         idea.hits += 1
         idea.author.hits += 1
         voter.delivered_hits += 1
 
     elif post_data.get('form.vote_miss'):
-        vote = 'miss'
         idea.misses += 1
         idea.author.misses += 1
         voter.delivered_misses += 1
