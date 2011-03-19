@@ -8,10 +8,11 @@ def _initTestingDB():
     from shootout.models import Base
     from sqlalchemy import create_engine
     engine = create_engine('sqlite://')
-    DBSession.configure(bind=engine)
+    session = DBSession()
+    session.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
-    return DBSession
+    return session
 
 def _registerRoutes(config):
     config.add_route('idea', '/ideas/{idea_id}')
@@ -89,7 +90,6 @@ class ViewTests(unittest.TestCase):
 
     def test_idea_add_not_existing_target(self):
         from shootout.views import idea_add
-        from pyramid.httpexceptions import HTTPNotFound
         self.config.testing_securitypolicy('username')
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest(params={'target': 100})
@@ -154,7 +154,7 @@ class ViewTests(unittest.TestCase):
             'target': 1,
         }
         request = testing.DummyRequest(post=post_data)
-        result = idea_vote(request)
+        idea_vote(request)
         self.assertEqual(idea.hits, 1)
         self.assertEqual(idea.misses, 0)
         self.assertEqual(idea.hit_percentage, 100)
@@ -178,7 +178,7 @@ class ViewTests(unittest.TestCase):
             'target': 1,
         }
         request = testing.DummyRequest(post=post_data)
-        result = idea_vote(request)
+        idea_vote(request)
         self.assertEqual(idea.hits, 0)
         self.assertEqual(idea.misses, 1)
         self.assertEqual(idea.hit_percentage, 0)
@@ -229,7 +229,7 @@ class ViewTests(unittest.TestCase):
                 'name': u'John Doe',
             }
         )
-        result = user_add(request)
+        user_add(request)
         users = self.session.query(User).all()
         self.assertEqual(len(users), 1)
         user = users[0]
@@ -250,7 +250,7 @@ class ViewTests(unittest.TestCase):
         _registerCommonTemplates(self.config)
         request = testing.DummyRequest()
         request.matchdict = {'username': 'username'}
-        user = self._addUser()
+        self._addUser()
         result = user_view(request)
         self.assertEqual(result['user'].username, 'username')
         self.assertEqual(result['user'].user_id, 1)
@@ -270,7 +270,7 @@ class ViewTests(unittest.TestCase):
 
     def test_tag_view(self):
         from shootout.views import tag_view
-        from shootout.models import Tag, Idea
+        from shootout.models import Tag
         self.config.testing_securitypolicy('username')
         _registerRoutes(self.config)
         _registerCommonTemplates(self.config)
@@ -317,7 +317,7 @@ class ViewTests(unittest.TestCase):
                 'password': u'wrongpassword',
             }
         )
-        result = login_view(request)
+        login_view(request)
         messages = request.session.peek_flash()
         self.assertEqual(messages, [u'Failed to login.'])
 
@@ -333,7 +333,7 @@ class ViewTests(unittest.TestCase):
                 'password': u'password',
             }
         )
-        result = login_view(request)
+        login_view(request)
         messages = request.session.peek_flash()
         self.assertEqual(messages, [u'Logged in successfully.'])
 
@@ -341,6 +341,6 @@ class ViewTests(unittest.TestCase):
         from shootout.views import logout_view
         _registerRoutes(self.config)
         request = testing.DummyRequest()
-        result = logout_view(request)
+        logout_view(request)
         messages = request.session.peek_flash()
         self.assertEqual(messages, [u'Logged out successfully.'])
