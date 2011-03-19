@@ -233,9 +233,9 @@ class ViewTests(unittest.TestCase):
         users = self.session.query(User).all()
         self.assertEqual(len(users), 1)
         user = users[0]
-        self.assertEqual(user.username, 'username')
+        self.assertEqual(user.username, u'username')
         self.assertEqual(user.name, u'John Doe')
-        self.assertEqual(user.email, 'username@example.com')
+        self.assertEqual(user.email, u'username@example.com')
         self.assertEqual(user.hits, 0)
         self.assertEqual(user.misses, 0)
         self.assertEqual(user.delivered_hits, 0)
@@ -275,8 +275,8 @@ class ViewTests(unittest.TestCase):
         _registerRoutes(self.config)
         _registerCommonTemplates(self.config)
         user = self._addUser()
-        tag1 = Tag('bar')
-        tag2 = Tag('foo')
+        tag1 = Tag(u'bar')
+        tag2 = Tag(u'foo')
         self.session.add_all([tag1, tag2])
         idea1 = self._addIdea(user=user)
         idea1.tags.append(tag1)
@@ -287,18 +287,18 @@ class ViewTests(unittest.TestCase):
         self.session.flush()
         
         request = testing.DummyRequest()
-        request.matchdict = {'tag_name': 'bar'}
+        request.matchdict = {'tag_name': u'bar'}
         result = tag_view(request)
         ideas = result['ideas'].all()
         self.assertEqual(ideas[0].idea_id, idea1.idea_id)
         self.assertEqual(ideas[1].idea_id, idea2.idea_id)
-        self.assertEqual(result['tag'], 'bar')
+        self.assertEqual(result['tag'], u'bar')
 
         request = testing.DummyRequest()
-        request.matchdict = {'tag_name': 'foo'}
+        request.matchdict = {'tag_name': u'foo'}
         result = tag_view(request)
         self.assertEqual(result['ideas'].one().idea_id, idea3.idea_id)
-        self.assertEqual(result['tag'], 'foo')
+        self.assertEqual(result['tag'], u'foo')
 
     def test_about_view(self):
         from shootout.views import about_view
