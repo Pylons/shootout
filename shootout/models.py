@@ -8,11 +8,13 @@ except ImportError:
 from random import sample
 from string import letters
 
+import cryptacular.bcrypt
+
 import transaction
 
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy.orm import (scoped_session, sessionmaker, relation, backref,
-                            column_property)
+                            column_property, synonym)
 from sqlalchemy.types import Integer, Unicode, UnicodeText
 from sqlalchemy.sql import func
 from sqlalchemy.exc import IntegrityError
@@ -28,9 +30,10 @@ from pyramid.security import Allow
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
+crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
-def hash_password(salt, password):
-    return sha1(salt + password).hexdigest()
+def hash_password(password):
+    return crypt.encode(password)
 
 class User(Base):
     """
@@ -39,7 +42,6 @@ class User(Base):
     __tablename__ = 'users'
     user_id = Column(Integer, primary_key=True)
     username = Column(Unicode(20), unique=True)
-    password = Column(Unicode(53))
     name = Column(Unicode(50))
     email = Column(Unicode(50))
     hits = Column(Integer, default=0)
@@ -47,13 +49,22 @@ class User(Base):
     delivered_hits = Column(Integer, default=0)
     delivered_misses = Column(Integer, default=0)
 
+    _password = Column('password', Unicode(60))
+
+    def _get_password(self):
+        return self._password
+
+    def _set_password(self, password):
+        self._password = hash_password(password)
+
+    password = property(_get_password, _set_password)
+    password = synonym('_password', descriptor=password)
+
     def __init__(self, username, password, name, email):
         self.username = username
         self.name = name
         self.email = email
-
-        salt = ''.join(sample(letters, 8))
-        self.password = 'SHA|%s|%s' % (salt, hash_password(salt, password))
+        self.password = password
 
     @classmethod
     def get_by_username(cls, username):
@@ -64,9 +75,8 @@ class User(Base):
         user = cls.get_by_username(username)
         if not user:
             return False
-        (salt, user_password) = user.password.split('|')[1:]
-        return user_password == hash_password(salt, password)
-        
+        return crypt.check(password, user.password)
+
 
 ideas_tags = Table('ideas_tags', Base.metadata,
     Column('idea_id', Integer, ForeignKey('ideas.idea_id')),

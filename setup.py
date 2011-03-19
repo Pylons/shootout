@@ -16,6 +16,7 @@ requires = [
     'zope.sqlalchemy',
     'WebError',
     'pyramid_simpleform',
+    'cryptacular',
     ]
 
 if sys.version_info[:3] < (2,5,0):
