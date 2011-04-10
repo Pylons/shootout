@@ -92,12 +92,10 @@ class Tag(Base):
 
     @staticmethod
     def extract_tags(tags_string):
-        tags = tags_string.replace(';',' ').replace(',',' ')
+        tags = tags_string.replace(';', ' ').replace(',', ' ')
         tags = [tag.lower() for tag in tags.split()]
         tags = set(tags)
 
-        if '' in tags:
-            tags.remove('')
         return tags
 
     @classmethod
