@@ -8,7 +8,7 @@ def _initTestingDB():
     from shootout.models import DBSession
     from shootout.models import Base
     from sqlalchemy import create_engine
-    engine = create_engine('sqlite://')
+    engine = create_engine('sqlite://', echo='debug')
     session = DBSession()
     session.configure(bind=engine)
     Base.metadata.bind = engine
@@ -33,11 +33,11 @@ class ModelsTestCase(unittest.TestCase):
         self.session.flush()
         return user
 
-    def _addIdea(self, target=None, user=None):
+    def _addIdea(self, target=None, user=None, title=u'title'):
         from shootout.models import Idea
         if not user:
             user = self._addUser()
-        idea = Idea(target=target, author=user, title=u'title',
+        idea = Idea(target=target, author=user, title=title,
                     text=u'text')
         self.session.add(idea)
         self.session.flush()
@@ -59,6 +59,18 @@ class TestUser(ModelsTestCase):
         self.assertEqual(user.misses, 0)
         self.assertEqual(user.delivered_hits, 0)
         self.assertEqual(user.delivered_misses, 0)
+
+    def test_doesnt_exitst(self):
+        from shootout.models import User
+        from sqlalchemy.orm.exc import NoResultFound
+        query = self.session.query(User).filter(User.username == u'nobody')
+        self.assertRaises(NoResultFound, query.one)
+
+    def test_arleady_exist(self):
+        from shootout.models import User
+        from sqlalchemy.exc import IntegrityError
+        self._addUser()
+        self.assertRaises(IntegrityError, self._addUser)
 
     def test_password_hashing(self):
         import cryptacular.bcrypt
@@ -123,3 +135,108 @@ class TestTag(ModelsTestCase):
         ]
         self.assertEqual(list(tags_counts), expected_counts)
 
+
+class TestIdea(ModelsTestCase):
+
+    def _getIdea(self, idea_id):
+        from shootout.models import Idea
+        query = self.session.query(Idea).filter(Idea.idea_id == idea_id)
+        return query.first()
+
+    def test_add_idea(self):
+        from shootout.models import Idea
+        user = self._addUser()
+        idea = Idea(
+            author=user,
+            title=u'Foo',
+            text=u'Lorem ipsum dolor sit amet',
+        )
+        self.session.flush()
+
+        idea = self.session.query(Idea).filter(Idea.title == u'Foo')
+        idea = idea.first()
+
+        self.assertEqual(idea.comments, [])
+        self.assertEqual(idea.author.user_id, user.user_id)
+        self.assertEqual(idea.author.username, u'username')
+        self.assertEqual(idea.title, u'Foo')
+        self.assertEqual(idea.text, u'Lorem ipsum dolor sit amet')
+        self.assertEqual(idea.hits, 0)
+        self.assertEqual(idea.misses, 0)
+        self.assertEqual(idea.tags, [])
+        self.assertEqual(idea.voted_users.all(), [])
+        self.assertEqual(idea.hit_percentage, 0)
+        self.assertEqual(idea.total_votes, 0)
+        self.assertEqual(idea.vote_differential, 0)
+
+    def test_doesnt_exist(self):
+        from shootout.models import Idea
+        from sqlalchemy.orm.exc import NoResultFound
+        query = self.session.query(Idea).filter(Idea.title == u'Bar')
+        self.assertRaises(NoResultFound, query.one)
+
+    def test_add_comments(self):
+        user = self._addUser()
+        idea = self._addIdea(user=user)
+        comment1 = self._addIdea(user=user, target=idea)
+        comment2 = self._addIdea(user=user, target=idea)
+
+        self.assertEqual(idea.comments, [comment1, comment2])
+
+    def test_hit_percentage(self):
+        idea = self._addIdea()
+        idea.hits = 3
+        idea.misses = 7
+        self.session.flush()
+        idea = self._getIdea(idea.idea_id)
+        self.assertEqual(idea.hit_percentage, 30)
+        idea.hits = 13
+        self.session.flush()
+        idea = self._getIdea(idea.idea_id)
+        self.assertEqual(idea.hit_percentage, 65)
+
+    def test_total_votes(self):
+        idea = self._addIdea()
+        idea.hits = 5
+        idea.misses = 12
+        self.session.flush()
+        idea = self._getIdea(idea.idea_id)
+        self.assertEqual(idea.total_votes, 17)
+
+    def test_vote_differential(self):
+        idea = self._addIdea()
+        idea.hits = 3
+        idea.misses = 8
+        self.session.flush()
+        idea = self._getIdea(idea.idea_id)
+        self.assertEqual(idea.vote_differential, -5)
+
+    def test_get_by_id(self):
+        from shootout.models import Idea
+        idea = self._addIdea()
+        queried_idea = Idea.get_by_id(idea.idea_id)
+        self.assertEqual(idea, queried_idea)
+
+    def test_ideas_bunch(self):
+        from shootout.models import Idea
+        user = self._addUser()
+        idea1 = self._addIdea(user=user)
+        idea2 = self._addIdea(user=user, title=u'title3')
+        idea3 = self._addIdea(user=user, title=u'title4')
+        idea4 = self._addIdea(user=user, title=u'title2')
+
+        self.assertEqual(Idea.ideas_bunch(Idea.idea_id),
+                         [idea1, idea2, idea3, idea4])
+        self.assertEqual(Idea.ideas_bunch(Idea.idea_id, 2), [idea1, idea2])
+        self.assertEqual(Idea.ideas_bunch(Idea.title),
+                         [idea1, idea4, idea2, idea3])
+
+    def test_user_voted(self):
+        from shootout.models import Idea
+        idea = self._addIdea()
+        voting_user = self._addUser(u'voter')
+        idea.voted_users.append(voting_user)
+        self.session.flush()
+        self.assertTrue(idea.user_voted(u'voter'))
+        self.assertFalse(idea.user_voted(u'xxx'))
+    
