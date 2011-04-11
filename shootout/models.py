@@ -144,6 +144,7 @@ class Idea(Base):
     voted_users = relation(User, secondary=voted_users, lazy='dynamic',
         backref='voted_ideas')
     hit_percentage = func.coalesce(hits / (hits + misses) * 100, 0)
+
     hit_percentage = column_property(hit_percentage.label('hit_percentage'))
 
     total_votes = column_property((hits + misses).label('total_votes'))

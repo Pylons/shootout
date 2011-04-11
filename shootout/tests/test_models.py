@@ -8,7 +8,7 @@ def _initTestingDB():
     from shootout.models import DBSession
     from shootout.models import Base
     from sqlalchemy import create_engine
-    engine = create_engine('sqlite://', echo='debug')
+    engine = create_engine('sqlite://')
     session = DBSession()
     session.configure(bind=engine)
     Base.metadata.bind = engine
