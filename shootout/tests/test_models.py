@@ -183,18 +183,18 @@ class TestIdea(ModelsTestCase):
 
         self.assertEqual(idea.comments, [comment1, comment2])
 
-    @unittest.skip("no idea how to force floats instead of ints here")
-    def test_hit_percentage(self):
-        idea = self._addIdea()
-        idea.hits = 3
-        idea.misses = 7
-        self.session.flush()
-        idea = self._getIdea(idea.idea_id)
-        self.assertEqual(idea.hit_percentage, 30)
-        idea.hits = 13
-        self.session.flush()
-        idea = self._getIdea(idea.idea_id)
-        self.assertEqual(idea.hit_percentage, 65)
+    # @unittest.skip("no idea how to force floats instead of ints here")
+    # def test_hit_percentage(self):
+    #     idea = self._addIdea()
+    #     idea.hits = 3
+    #     idea.misses = 7
+    #     self.session.flush()
+    #     idea = self._getIdea(idea.idea_id)
+    #     self.assertEqual(idea.hit_percentage, 30)
+    #     idea.hits = 13
+    #     self.session.flush()
+    #     idea = self._getIdea(idea.idea_id)
+    #     self.assertEqual(idea.hit_percentage, 65)
 
     def test_total_votes(self):
         idea = self._addIdea()
