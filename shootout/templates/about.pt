@@ -14,6 +14,7 @@
             <li>Urldispatch mechanism (similar to routes).</li>
             <li>Built-in authentication and authorization mechanism.</li>
             <li>Integration with pyramid_simpleform for form handling.</li>
+            <li>Beaker encrypted sessions using pyramid_beaker.</li>
             <li>SQLAlchemy based models.</li>
         </ul>
         <p>The code can be checked out from the version control repository at:</p>

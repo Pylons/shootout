@@ -17,13 +17,15 @@ requires = [
     'WebError',
     'pyramid_simpleform',
     'cryptacular',
-    ]
+    'pyramid_beaker',
+    'pycrypto',
+]
 
 if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')
 
 setup(name='shootout',
-      version='0.2',
+      version='0.2.1',
       description='A generic idea discussion and rating app (Pyramid sample)',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

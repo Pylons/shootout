@@ -52,26 +52,23 @@ def idea_vote(request):
     target = post_data.get('target')
     session = DBSession()
 
-    idea = Idea.get_by_id(target)
+    idea = Idea.get_by_id(target, with_joinedload=False)
     voter_username = authenticated_userid(request)
     voter = User.get_by_username(voter_username)
 
+    redirect_url = route_url('idea', request, idea_id=idea.idea_id)
+    response = HTTPMovedPermanently(location=redirect_url) 
+
+    if voter.user_id == idea.author_id:
+        request.session.flash(u'You cannot vote on your own ideas.')
+        return response
+
     if post_data.get('form.vote_hit'):
-        idea.hits += 1
-        idea.author.hits += 1
-        voter.delivered_hits += 1
-
+        idea.vote(voter, True)
     elif post_data.get('form.vote_miss'):
-        idea.misses += 1
-        idea.author.misses += 1
-        voter.delivered_misses += 1
-
-    idea.voted_users.append(voter)
+        idea.vote(voter, False)
 
     session.flush()
-
-    redirect_url = route_url('idea', request, idea_id=idea.idea_id)
-    response = HTTPMovedPermanently(location=redirect_url)
 
     return response
 
@@ -136,7 +133,7 @@ def idea_add(request):
     target = request.GET.get('target')
     session = DBSession()
     if target:
-        target = Idea.get_by_id(target)
+        target = Idea.get_by_id(target, with_joinedload=False)
         if not target:
             return HTTPNotFound()
         kind = 'comment'
@@ -188,7 +185,7 @@ def user_view(request):
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
         'latest': latest_view(request),
-        'login_form' :login_form,
+        'login_form': login_form,
     }
 
 
@@ -283,8 +280,9 @@ def login_form_view(request):
 
 
 def latest_view(request):
-    latest = Idea.ideas_bunch(Idea.idea_id.desc())
+    latest = Idea.ideas_bunch(Idea.idea_id.desc(), with_joinedload=False)
     return render('templates/latest.pt', {'latest': latest}, request)
+
 
 def cloud_view(request):
     totalcounts = []
