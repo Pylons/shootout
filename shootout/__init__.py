@@ -3,18 +3,20 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
+from pyramid_beaker import session_factory_from_settings
+
 from sqlalchemy import engine_from_config
 
 from shootout.models import initialize_sql
 
 
-def main(global_config, **settings):
+def main(global_config, **settings):  # pragma: no cover
     """ This function returns a Pyramid WSGI application.
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
     initialize_sql(engine)
 
-    session_factory = UnencryptedCookieSessionFactoryConfig('secret')
+    session_factory = session_factory_from_settings(settings)
 
     authn_policy = AuthTktAuthenticationPolicy('s0secret')
     authz_policy = ACLAuthorizationPolicy()

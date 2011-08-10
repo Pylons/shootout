@@ -8,6 +8,8 @@ demonstrated in the code include:
 
 - Built-in authentication and authorization mechanism.
 
+- Beaker encrypted sessions using pyramid_beaker.
+
 - Integration with pyramid_simpleform for form handling.
 
 - SQLAlchemy based models.
@@ -22,17 +24,17 @@ On a Debian system, these imply: build-essentials, libsqlite3-dev.
 Installing and Running
 ----------------------
 
-#. virtualenv --no-site-packages env
+# virtualenv --no-site-packages env
 
-#. cd env
+# cd env
 
-#. . bin/activate
+# . bin/activate
 
-#. git clone git@github.com:Pylons/shootout.git
+# git clone git@github.com:Pylons/shootout.git
 
-#. cd shootout
+# cd shootout
 
-#. python setup.py develop
+# python setup.py develop
 
-#. paster serve development.ini
+# paster serve development.ini
 

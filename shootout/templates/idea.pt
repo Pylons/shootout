@@ -25,7 +25,7 @@
     <div tal:condition="voted">
         <p>You already voted for this idea.</p>
     </div>
-    <div tal:condition="not voted and viewer_username">
+    <div tal:condition="not voted and viewer_username and idea.author.username != viewer_username">
         <form action="${request.route_url('idea_vote')}" method="post">
             <input name="_csrf" type="hidden"
                 value="${request.session.get_csrf_token()}">
