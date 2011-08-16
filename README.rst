@@ -1,7 +1,7 @@
 shootout
 ========
 
-shootout is a demo app for the Pyramid web framework.  The concepts
+Shootout is a demo app for the Pyramid web framework.  The concepts
 demonstrated in the code include:
 
 - Urldispatch mechanism (similar to routes).
@@ -24,17 +24,17 @@ On a Debian system, these imply: build-essentials, libsqlite3-dev.
 Installing and Running
 ----------------------
 
-# virtualenv --no-site-packages env
+- virtualenv --no-site-packages env
 
-# cd env
+- cd env
 
-# . bin/activate
+- . bin/activate
 
-# git clone git@github.com:Pylons/shootout.git
+- git clone git@github.com:Pylons/shootout.git
 
-# cd shootout
+- cd shootout
 
-# python setup.py develop
+- python setup.py develop
 
-# paster serve development.ini
+- paster serve development.ini
 
