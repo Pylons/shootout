@@ -28,8 +28,10 @@ Base = declarative_base()
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
+
 def hash_password(password):
     return unicode(crypt.encode(password))
+
 
 class User(Base):
     """
@@ -64,7 +66,7 @@ class User(Base):
 
     @classmethod
     def get_by_username(cls, username):
-        return DBSession.query(cls).filter(cls.username==username).first()
+        return DBSession.query(cls).filter(cls.username == username).first()
 
     @classmethod
     def check_password(cls, username, password):
@@ -101,7 +103,7 @@ class Tag(Base):
 
     @classmethod
     def get_by_name(cls, tag_name):
-        tag = DBSession.query(cls).filter(cls.name==tag_name)
+        tag = DBSession.query(cls).filter(cls.name == tag_name)
         return tag.first()
 
     @classmethod
@@ -117,7 +119,7 @@ class Tag(Base):
             tags.append(tag)
 
         return tags
-    
+
     @classmethod
     def tag_counts(cls):
         query = DBSession.query(Tag.name, func.count('*'))
@@ -164,7 +166,7 @@ class Idea(Base):
     @classmethod
     def get_by_id(cls, idea_id, with_joinedload=True):
         query = cls.get_query(with_joinedload)
-        return query.filter(cls.idea_id==idea_id).first()
+        return query.filter(cls.idea_id == idea_id).first()
 
     @classmethod
     def get_by_tagname(cls, tag_name, with_joinedload=True):
@@ -174,7 +176,7 @@ class Idea(Base):
     @classmethod
     def ideas_bunch(cls, order_by, how_many=10, with_joinedload=True):
         query = cls.get_query(with_joinedload).join('author')
-        return query.filter(cls.target==None).order_by(order_by)[:how_many]
+        return query.filter(cls.target == None).order_by(order_by)[:how_many]
 
     def user_voted(self, username):
         return bool(self.voted_users.filter_by(username=username).first())
@@ -197,8 +199,9 @@ class RootFactory(object):
         (Allow, Everyone, 'view'),
         (Allow, Authenticated, 'post')
     ]
+
     def __init__(self, request):
-        pass  #pragma: no cover
+        pass  # pragma: no cover
 
 
 def initialize_sql(engine):  # pragma: no cover

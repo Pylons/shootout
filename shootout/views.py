@@ -26,7 +26,7 @@ def main_view(request):
     top = Idea.ideas_bunch(Idea.hits.desc())
     bottom = Idea.ideas_bunch(Idea.misses.desc())
     last10 = Idea.ideas_bunch(Idea.idea_id.desc())
-    
+
     toplists = [
         {'title': 'Latest shots', 'items': last10},
         {'title': 'Most hits', 'items': top},
@@ -35,7 +35,7 @@ def main_view(request):
     ]
 
     login_form = login_form_view(request)
-    
+
     return {
         'username': authenticated_userid(request),
         'toolbar': toolbar_view(request),
@@ -57,7 +57,7 @@ def idea_vote(request):
     voter = User.get_by_username(voter_username)
 
     redirect_url = route_url('idea', request, idea_id=idea.idea_id)
-    response = HTTPMovedPermanently(location=redirect_url) 
+    response = HTTPMovedPermanently(location=redirect_url)
 
     if voter.user_id == idea.author_id:
         request.session.flash(u'You cannot vote on your own ideas.')
@@ -82,7 +82,7 @@ class RegistrationSchema(formencode.Schema):
     password = formencode.validators.String(not_empty=True)
     confirm_password = formencode.validators.String(not_empty=True)
     chained_validators = [
-        formencode.validators.FieldsMatch('password','confirm_password')
+        formencode.validators.FieldsMatch('password', 'confirm_password')
     ]
 
 
@@ -94,7 +94,7 @@ def user_add(request):
 
     if 'form.submitted' in request.POST and form.validate():
         session = DBSession()
-        username=form.data['username']
+        username = form.data['username']
         user = User(
             username=username,
             password=form.data['password'],
@@ -157,7 +157,7 @@ def idea_add(request):
         if tags:
             idea.tags = tags
 
-        session.add(idea)            
+        session.add(idea)
         redirect_url = route_url('idea', request, idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
@@ -173,6 +173,7 @@ def idea_add(request):
         'target': target,
         'kind': kind,
     }
+
 
 @view_config(permission='view', route_name='user',
              renderer='templates/user.pt')
@@ -251,7 +252,7 @@ def login_view(request):
             headers = remember(request, login)
             request.session.flash(u'Logged in successfully.')
             return HTTPFound(location=came_from, headers=headers)
-    
+
     request.session.flash(u'Failed to login.')
     return HTTPFound(location=came_from)
 
@@ -269,7 +270,7 @@ def toolbar_view(request):
     viewer_username = authenticated_userid(request)
     return render(
         'templates/toolbar.pt',
-        {'viewer_username': viewer_username}, 
+        {'viewer_username': viewer_username},
         request
     )
 
