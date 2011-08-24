@@ -12,7 +12,7 @@ requires = [
     'pyramid',
     'SQLAlchemy',
     'transaction',
-    'repoze.tm2>=1.0b1', # default_commit_veto
+    'repoze.tm2>=1.0b1',  # default_commit_veto
     'zope.sqlalchemy',
     'WebError',
     'pyramid_simpleform',
@@ -21,13 +21,13 @@ requires = [
     'pycrypto',
 ]
 
-if sys.version_info[:3] < (2,5,0):
+if sys.version_info[:3] < (2, 5, 0):
     requires.append('pysqlite')
 
 setup(name='shootout',
       version='0.2.1',
       description='A generic idea discussion and rating app (Pyramid sample)',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Framework :: Pylons",
         "Framework :: BFG",
@@ -47,8 +47,8 @@ setup(name='shootout',
       include_package_data=True,
       zip_safe=False,
       test_suite='shootout.tests',
-      install_requires = requires,
-      entry_points = """\
+      install_requires=requires,
+      entry_points="""\
       [paste.app_factory]
       main = shootout:main
       """,

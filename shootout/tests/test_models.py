@@ -67,7 +67,6 @@ class TestUser(ModelsTestCase):
         self.assertRaises(NoResultFound, query.one)
 
     def test_arleady_exist(self):
-        from shootout.models import User
         from sqlalchemy.exc import IntegrityError
         self._addUser()
         self.assertRaises(IntegrityError, self._addUser)
@@ -80,7 +79,7 @@ class TestUser(ModelsTestCase):
 
     def test_password_checking(self):
         from shootout.models import User
-        user = self._addUser()
+        self._addUser()
         self.assertTrue(User.check_password(u'username', u'password'))
         self.assertFalse(User.check_password(u'username', u'wrong'))
         self.assertFalse(User.check_password(u'nobody', u'password'))
@@ -89,7 +88,7 @@ class TestUser(ModelsTestCase):
         from shootout.models import User
         user = self._addUser()
         self.assertEqual(user, User.get_by_username(u'username'))
-       
+
 
 class TestTag(ModelsTestCase):
     def test_extracting_tags(self):
@@ -110,7 +109,7 @@ class TestTag(ModelsTestCase):
         self.assertEqual(tags[2].name, tags_names.pop())
 
     def test_tags_counts(self):
-        from shootout.models import Tag, Idea
+        from shootout.models import Tag
 
         user = self._addUser()
 
@@ -233,11 +232,10 @@ class TestIdea(ModelsTestCase):
                          [idea1, idea4, idea2, idea3])
 
     def test_user_voted(self):
-        from shootout.models import Idea
         idea = self._addIdea()
         voting_user = self._addUser(u'voter')
         idea.voted_users.append(voting_user)
         self.session.flush()
         self.assertTrue(idea.user_voted(u'voter'))
         self.assertFalse(idea.user_voted(u'xxx'))
-    
+
