@@ -8,13 +8,13 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'setuptools',
     'pyramid',
     'SQLAlchemy',
     'transaction',
-    'repoze.tm2>=1.0b1',  # default_commit_veto
+    'pyramid_tm',
+    'pyramid_debugtoolbar',
+    'pyramid_exclog',
     'zope.sqlalchemy',
-    'WebError',
     'pyramid_simpleform',
     'cryptacular',
     'pyramid_beaker',
@@ -25,7 +25,7 @@ if sys.version_info[:3] < (2, 5, 0):
     requires.append('pysqlite')
 
 setup(name='shootout',
-      version='0.2.1',
+      version='0.2.2',
       description='A generic idea discussion and rating app (Pyramid sample)',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
@@ -42,7 +42,7 @@ setup(name='shootout',
       author_email="cguardia@yahoo.com, virhilo@gmail.com",
       url='http://pylons-devel@googlegroups.com',
       license="BSD-derived (http://www.repoze.org/LICENSE.txt)",
-      keywords='web wsgi pyramid pylons example',
+      keywords='web wsgi bfg pyramid pylons example',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
