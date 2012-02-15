@@ -9,6 +9,7 @@ from sqlalchemy.orm import relation
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import column_property
 from sqlalchemy.orm import synonym
+from sqlalchemy.orm import joinedload
 from sqlalchemy.types import Integer
 from sqlalchemy.types import Unicode
 from sqlalchemy.types import UnicodeText
@@ -27,8 +28,10 @@ Base = declarative_base()
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
 
+
 def hash_password(password):
     return unicode(crypt.encode(password))
+
 
 class User(Base):
     """
@@ -63,7 +66,7 @@ class User(Base):
 
     @classmethod
     def get_by_username(cls, username):
-        return DBSession.query(cls).filter(cls.username==username).first()
+        return DBSession.query(cls).filter(cls.username == username).first()
 
     @classmethod
     def check_password(cls, username, password):
@@ -100,7 +103,7 @@ class Tag(Base):
 
     @classmethod
     def get_by_name(cls, tag_name):
-        tag = DBSession.query(cls).filter(cls.name==tag_name)
+        tag = DBSession.query(cls).filter(cls.name == tag_name)
         return tag.first()
 
     @classmethod
@@ -116,7 +119,7 @@ class Tag(Base):
             tags.append(tag)
 
         return tags
-    
+
     @classmethod
     def tag_counts(cls):
         query = DBSession.query(Tag.name, func.count('*'))
@@ -154,20 +157,41 @@ class Idea(Base):
     )
 
     @classmethod
-    def get_by_id(cls, idea_id):
-        return DBSession.query(cls).filter(cls.idea_id==idea_id).first()
+    def get_query(cls, with_joinedload=True):
+        query = DBSession.query(cls)
+        if with_joinedload:
+            query = query.options(joinedload('tags'), joinedload('author'))
+        return query
 
     @classmethod
-    def get_by_tagname(cls, tag_name):
-        return DBSession.query(Idea).filter(Idea.tags.any(name=tag_name))
+    def get_by_id(cls, idea_id, with_joinedload=True):
+        query = cls.get_query(with_joinedload)
+        return query.filter(cls.idea_id == idea_id).first()
 
     @classmethod
-    def ideas_bunch(cls, order_by, how_many=10):
-        q = DBSession.query(cls).join('author').filter(cls.target==None)
-        return q.order_by(order_by)[:how_many]
+    def get_by_tagname(cls, tag_name, with_joinedload=True):
+        query = cls.get_query(with_joinedload)
+        return query.filter(Idea.tags.any(name=tag_name))
+
+    @classmethod
+    def ideas_bunch(cls, order_by, how_many=10, with_joinedload=True):
+        query = cls.get_query(with_joinedload).join('author')
+        return query.filter(cls.target == None).order_by(order_by)[:how_many]
 
     def user_voted(self, username):
         return bool(self.voted_users.filter_by(username=username).first())
+
+    def vote(self, user, positive):
+        if positive:
+            self.hits += 1
+            self.author.hits += 1
+            user.delivered_hits += 1
+        else:
+            self.misses += 1
+            self.author.misses += 1
+            user.delivered_misses += 1
+
+        self.voted_users.append(user)
 
 
 class RootFactory(object):
@@ -175,11 +199,12 @@ class RootFactory(object):
         (Allow, Everyone, 'view'),
         (Allow, Authenticated, 'post')
     ]
+
     def __init__(self, request):
-        pass
+        pass  # pragma: no cover
 
 
-def initialize_sql(engine):
+def initialize_sql(engine):  # pragma: no cover
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)

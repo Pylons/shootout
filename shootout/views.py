@@ -26,7 +26,7 @@ def main_view(request):
     top = Idea.ideas_bunch(Idea.hits.desc())
     bottom = Idea.ideas_bunch(Idea.misses.desc())
     last10 = Idea.ideas_bunch(Idea.idea_id.desc())
-    
+
     toplists = [
         {'title': 'Latest shots', 'items': last10},
         {'title': 'Most hits', 'items': top},
@@ -35,7 +35,7 @@ def main_view(request):
     ]
 
     login_form = login_form_view(request)
-    
+
     return {
         'username': authenticated_userid(request),
         'toolbar': toolbar_view(request),
@@ -52,26 +52,23 @@ def idea_vote(request):
     target = post_data.get('target')
     session = DBSession()
 
-    idea = Idea.get_by_id(target)
+    idea = Idea.get_by_id(target, with_joinedload=False)
     voter_username = authenticated_userid(request)
     voter = User.get_by_username(voter_username)
 
-    if post_data.get('form.vote_hit'):
-        idea.hits += 1
-        idea.author.hits += 1
-        voter.delivered_hits += 1
-
-    elif post_data.get('form.vote_miss'):
-        idea.misses += 1
-        idea.author.misses += 1
-        voter.delivered_misses += 1
-
-    idea.voted_users.append(voter)
-
-    session.flush()
-
     redirect_url = route_url('idea', request, idea_id=idea.idea_id)
     response = HTTPMovedPermanently(location=redirect_url)
+
+    if voter.user_id == idea.author_id:
+        request.session.flash(u'You cannot vote on your own ideas.')
+        return response
+
+    if post_data.get('form.vote_hit'):
+        idea.vote(voter, True)
+    elif post_data.get('form.vote_miss'):
+        idea.vote(voter, False)
+
+    session.flush()
 
     return response
 
@@ -85,7 +82,7 @@ class RegistrationSchema(formencode.Schema):
     password = formencode.validators.String(not_empty=True)
     confirm_password = formencode.validators.String(not_empty=True)
     chained_validators = [
-        formencode.validators.FieldsMatch('password','confirm_password')
+        formencode.validators.FieldsMatch('password', 'confirm_password')
     ]
 
 
@@ -97,7 +94,7 @@ def user_add(request):
 
     if 'form.submitted' in request.POST and form.validate():
         session = DBSession()
-        username=form.data['username']
+        username = form.data['username']
         user = User(
             username=username,
             password=form.data['password'],
@@ -136,7 +133,7 @@ def idea_add(request):
     target = request.GET.get('target')
     session = DBSession()
     if target:
-        target = Idea.get_by_id(target)
+        target = Idea.get_by_id(target, with_joinedload=False)
         if not target:
             return HTTPNotFound()
         kind = 'comment'
@@ -160,7 +157,7 @@ def idea_add(request):
         if tags:
             idea.tags = tags
 
-        session.add(idea)            
+        session.add(idea)
         redirect_url = route_url('idea', request, idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
@@ -177,6 +174,7 @@ def idea_add(request):
         'kind': kind,
     }
 
+
 @view_config(permission='view', route_name='user',
              renderer='templates/user.pt')
 def user_view(request):
@@ -188,7 +186,7 @@ def user_view(request):
         'toolbar': toolbar_view(request),
         'cloud': cloud_view(request),
         'latest': latest_view(request),
-        'login_form' :login_form,
+        'login_form': login_form,
     }
 
 
@@ -254,7 +252,7 @@ def login_view(request):
             headers = remember(request, login)
             request.session.flash(u'Logged in successfully.')
             return HTTPFound(location=came_from, headers=headers)
-    
+
     request.session.flash(u'Failed to login.')
     return HTTPFound(location=came_from)
 
@@ -272,7 +270,7 @@ def toolbar_view(request):
     viewer_username = authenticated_userid(request)
     return render(
         'templates/toolbar.pt',
-        {'viewer_username': viewer_username}, 
+        {'viewer_username': viewer_username},
         request
     )
 
@@ -283,8 +281,9 @@ def login_form_view(request):
 
 
 def latest_view(request):
-    latest = Idea.ideas_bunch(Idea.idea_id.desc())
+    latest = Idea.ideas_bunch(Idea.idea_id.desc(), with_joinedload=False)
     return render('templates/latest.pt', {'latest': latest}, request)
+
 
 def cloud_view(request):
     totalcounts = []

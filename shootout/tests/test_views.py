@@ -14,6 +14,7 @@ def _initTestingDB():
     Base.metadata.create_all(engine)
     return session
 
+
 def _registerRoutes(config):
     config.add_route('idea', '/ideas/{idea_id}')
     config.add_route('user', '/users/{username}')
@@ -26,11 +27,13 @@ def _registerRoutes(config):
     config.add_route('about', '/about')
     config.add_route('main', '/')
 
+
 def _registerCommonTemplates(config):
     config.testing_add_renderer('templates/login.pt')
     config.testing_add_renderer('templates/toolbar.pt')
     config.testing_add_renderer('templates/cloud.pt')
     config.testing_add_renderer('templates/latest.pt')
+
 
 class ViewTests(unittest.TestCase):
     def setUp(self):
@@ -59,7 +62,7 @@ class ViewTests(unittest.TestCase):
         self.session.add(idea)
         self.session.flush()
         return idea
-        
+
     def test_main_view(self):
         from shootout.views import main_view
         self.config.testing_securitypolicy(u'username')
@@ -77,7 +80,7 @@ class ViewTests(unittest.TestCase):
         result = idea_add(request)
         self.assertEqual(result['target'], None)
         self.assertEqual(result['kind'], 'idea')
-        
+
     def test_idea_add_nosubmit_comment(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy(u'username')
@@ -95,7 +98,6 @@ class ViewTests(unittest.TestCase):
         request = testing.DummyRequest(params={'target': 100})
         result = idea_add(request)
         self.assertEqual(result.code, 404)
-
 
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
@@ -141,14 +143,37 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.tags[1].name, u'bar')
         self.assertEqual(idea.tags[2].name, u'def')
 
-    def test_positive_idea_voting(self):
+    def test_vote_on_own_idea(self):
         from shootout.views import idea_vote
         from shootout.models import User
-        _registerRoutes(self.config)        
+        _registerRoutes(self.config)
         idea = self._addIdea()
-        user = self.session.query(User).one()
+        self.session.query(User).one()
         self.assertEqual(idea.user_voted(u'username'), False)
         self.config.testing_securitypolicy(u'username')
+        post_data = {
+            'form.vote_hit': u'Hit',
+            'target': 1,
+        }
+        request = testing.DummyRequest(post=post_data)
+        idea_vote(request)
+        self.assertEqual(idea.hits, 0)
+        self.assertEqual(idea.misses, 0)
+        self.assertEqual(idea.hit_percentage, 0)
+        self.assertEqual(idea.total_votes, 0)
+        self.assertEqual(idea.vote_differential, 0)
+        self.assertEqual(idea.author.hits, 0)
+        self.assertEqual(len(idea.voted_users.all()), 0)
+        self.assertEqual(idea.user_voted(u'username'), False)
+
+    def test_positive_idea_voting(self):
+        from shootout.views import idea_vote
+        _registerRoutes(self.config)
+        user = self._addUser()
+        idea = self._addIdea(user=user)
+        voter = self._addUser(u'votername')
+        self.assertEqual(idea.user_voted(u'votername'), False)
+        self.config.testing_securitypolicy(u'votername')
         post_data = {
             'form.vote_hit': u'Hit',
             'target': 1,
@@ -162,17 +187,17 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.vote_differential, 1)
         self.assertEqual(idea.author.hits, 1)
         self.assertEqual(len(idea.voted_users.all()), 1)
-        self.assertEqual(idea.voted_users.one(), user)
-        self.assertTrue(idea.user_voted(u'username'))
+        self.assertEqual(idea.voted_users.one(), voter)
+        self.assertTrue(idea.user_voted(u'votername'))
 
     def test_negative_idea_voting(self):
         from shootout.views import idea_vote
-        from shootout.models import User
-        _registerRoutes(self.config)        
-        idea = self._addIdea()
-        user = self.session.query(User).one()
-        self.assertEqual(idea.user_voted(u'username'), False)
-        self.config.testing_securitypolicy(u'username')
+        _registerRoutes(self.config)
+        user = self._addUser()
+        idea = self._addIdea(user=user)
+        voter = self._addUser(u'votername')
+        self.assertEqual(idea.user_voted(u'votername'), False)
+        self.config.testing_securitypolicy(u'votername')
         post_data = {
             'form.vote_miss': u'Miss',
             'target': 1,
@@ -186,8 +211,8 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.vote_differential, -1)
         self.assertEqual(idea.author.hits, 0)
         self.assertEqual(len(idea.voted_users.all()), 1)
-        self.assertEqual(idea.voted_users.one(), user)
-        self.assertTrue(idea.user_voted(u'username'))
+        self.assertEqual(idea.voted_users.one(), voter)
+        self.assertTrue(idea.user_voted(u'votername'))
 
     def test_registration_nosubmit(self):
         from shootout.views import user_add
@@ -218,7 +243,7 @@ class ViewTests(unittest.TestCase):
     def test_registration_submit_schema_succeed(self):
         from shootout.views import user_add
         from shootout.models import User
-        _registerRoutes(self.config)        
+        _registerRoutes(self.config)
         request = testing.DummyRequest(
             post={
                 'form.submitted': u'Register',
@@ -285,7 +310,7 @@ class ViewTests(unittest.TestCase):
         idea3 = self._addIdea(user=user)
         idea3.tags.append(tag2)
         self.session.flush()
-        
+
         request = testing.DummyRequest()
         request.matchdict = {'tag_name': u'bar'}
         result = tag_view(request)
@@ -320,7 +345,6 @@ class ViewTests(unittest.TestCase):
         login_view(request)
         messages = request.session.peek_flash()
         self.assertEqual(messages, [u'Failed to login.'])
-
 
     def test_login_view_submit_success(self):
         from shootout.views import login_view

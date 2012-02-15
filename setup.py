@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.txt')).read()
+README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
@@ -19,15 +19,17 @@ requires = [
     'pyramid_simpleform',
     'cryptacular',
     'waitress',
+    'pyramid_beaker',
+    'pycrypto',
     ]
 
 if sys.version_info[:3] < (2,5,0):
     raise RuntimeError('This application requires Python 2.6+')
 
 setup(name='shootout',
-      version='0.2',
+      version='0.2.2',
       description='A generic idea discussion and rating app (Pyramid sample)',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Framework :: Pylons",
         "Framework :: BFG",
@@ -42,13 +44,13 @@ setup(name='shootout',
       author_email="cguardia@yahoo.com, virhilo@gmail.com",
       url='http://pylons-devel@googlegroups.com',
       license="BSD-derived (http://www.repoze.org/LICENSE.txt)",
-      keywords='web wsgi pyramid pylons example',
+      keywords='web wsgi bfg pyramid pylons example',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
       test_suite='shootout.tests',
-      install_requires = requires,
-      entry_points = """\
+      install_requires=requires,
+      entry_points="""\
       [paste.app_factory]
       main = shootout:main
       """,
