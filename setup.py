@@ -9,18 +9,20 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'setuptools',
-    'pyramid',
+    'pyramid>=1.2',
     'SQLAlchemy',
     'transaction',
-    'repoze.tm2>=1.0b1', # default_commit_veto
+    'pyramid_tm',
+    'pyramid_debugtoolbar',
+    'pyramid_exclog',
     'zope.sqlalchemy',
-    'WebError',
     'pyramid_simpleform',
     'cryptacular',
+    'waitress',
     ]
 
 if sys.version_info[:3] < (2,5,0):
-    requires.append('pysqlite')
+    raise RuntimeError('This application requires Python 2.6+')
 
 setup(name='shootout',
       version='0.2',

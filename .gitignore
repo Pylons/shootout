@@ -17,4 +17,4 @@ pypyenv/
 build/
 dist/
 ideadb
-
+exception.log
