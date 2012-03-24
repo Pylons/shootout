@@ -36,5 +36,7 @@ Installing and Running
 
 - python setup.py develop
 
-- paster serve development.ini
+- initialize_shootout_db
+
+- pserve development.ini
 
