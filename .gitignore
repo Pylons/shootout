@@ -9,6 +9,11 @@
 *.txt.py
 *.swp
 .coverage
+.project
+.pydevproject
+shootout/.project
+shootout/.pydevproject
+shootout/.settings/
 env26/
 env24/
 env27/
