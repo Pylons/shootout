@@ -6,11 +6,14 @@ from pyramid_beaker import session_factory_from_settings
 
 from sqlalchemy import engine_from_config
 
+from shootout.models import DBSession
+
 
 def main(global_config, **settings):  # pragma: no cover
     """ This function returns a Pyramid WSGI application.
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
+    DBSession.configure(bind=engine)
 
     session_factory = session_factory_from_settings(settings)
 

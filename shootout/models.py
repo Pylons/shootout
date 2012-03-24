@@ -176,7 +176,8 @@ class Idea(Base):
     @classmethod
     def ideas_bunch(cls, order_by, how_many=10, with_joinedload=True):
         query = cls.get_query(with_joinedload).join('author')
-        return query.filter(cls.target == None).order_by(order_by)[:how_many]
+        query = query.filter(cls.target == None).order_by(order_by)
+        return query.limit(how_many)
 
     def user_voted(self, username):
         return bool(self.voted_users.filter_by(username=username).first())
