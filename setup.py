@@ -27,7 +27,7 @@ if sys.version_info[:3] < (2,5,0):
     raise RuntimeError('This application requires Python 2.6+')
 
 setup(name='shootout',
-      version='0.2.2',
+      version='0.2.3',
       description='A generic idea discussion and rating app (Pyramid sample)',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
@@ -53,7 +53,8 @@ setup(name='shootout',
       entry_points="""\
       [paste.app_factory]
       main = shootout:main
+      [console_scripts]
+      initialize_shootout_db = shootout.scripts.initializedb:main
       """,
-      paster_plugins=['pyramid'],
       )
 

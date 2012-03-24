@@ -203,9 +203,3 @@ class RootFactory(object):
     def __init__(self, request):
         pass  # pragma: no cover
 
-
-def initialize_sql(engine):  # pragma: no cover
-    DBSession.configure(bind=engine)
-    Base.metadata.bind = engine
-    Base.metadata.create_all(engine)
-
