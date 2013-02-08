@@ -9,10 +9,10 @@ def _initTestingDB():
     from shootout.models import Base
     from sqlalchemy import create_engine
     engine = create_engine('sqlite://')
-    session = DBSession()
-    session.configure(bind=engine)
+    DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
+    session = DBSession()
     return session
 
 
@@ -22,7 +22,9 @@ class ModelsTestCase(unittest.TestCase):
 
     def tearDown(self):
         import transaction
+        from shootout.models import DBSession
         transaction.abort()
+        DBSession.remove()
         testing.tearDown()
 
     def _addUser(self, username=u'username'):
