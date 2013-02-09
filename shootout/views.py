@@ -130,7 +130,7 @@ class AddIdeaSchema(formencode.Schema):
 @view_config(permission='post', route_name='idea_add',
              renderer='templates/idea_add.pt')
 def idea_add(request):
-    target = request.GET.get('target')
+    target = request.POST.get('target') or request.GET.get('target')
     session = DBSession()
     if target:
         target = Idea.get_by_id(target, with_joinedload=False)
@@ -293,4 +293,3 @@ def cloud_view(request):
     cloud = sorted(totalcounts, key=itemgetter(0))
 
     return render('templates/cloud.pt', {'cloud': cloud}, request)
-
