@@ -4,15 +4,15 @@ shootout
 Shootout is a demo app for the Pyramid web framework.  The concepts
 demonstrated in the code include:
 
-- Urldispatch mechanism (similar to routes).
+- Url dispatch mechanism.
 
 - Built-in authentication and authorization mechanism.
 
-- Beaker encrypted sessions using pyramid_beaker.
+- Usage of built-in sessioning machinery.
 
 - Integration with pyramid_simpleform for form handling.
 
-- SQLAlchemy based models.
+- SQLAlchemy based models and transaction management via pyramid_tm.
 
 Library Requirements
 --------------------
@@ -23,6 +23,8 @@ On a Debian system, these imply: build-essentials, libsqlite3-dev.
 
 Installing and Running
 ----------------------
+
+Python 2.6 or 2.7 is required.
 
 - virtualenv --no-site-packages env
 

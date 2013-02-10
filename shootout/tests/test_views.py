@@ -3,7 +3,7 @@ import unittest
 from pyramid import testing
 
 
-def _initTestingDB():
+def init_db():
     from shootout.models import DBSession
     from shootout.models import Base
     from sqlalchemy import create_engine
@@ -14,30 +14,15 @@ def _initTestingDB():
     session = DBSession()
     return session
 
-
-def _registerRoutes(config):
-    config.add_route('idea', '/ideas/{idea_id}')
-    config.add_route('user', '/users/{username}')
-    config.add_route('tag', '/tags/{tag_name}')
-    config.add_route('idea_add', '/idea_add')
-    config.add_route('idea_vote', '/idea_vote')
-    config.add_route('register', '/register')
-    config.add_route('login', '/login')
-    config.add_route('logout', '/logout')
-    config.add_route('about', '/about')
-    config.add_route('main', '/')
-
-
-def _registerCommonTemplates(config):
+def register_templates(config):
     config.testing_add_renderer('templates/login.pt')
     config.testing_add_renderer('templates/toolbar.pt')
     config.testing_add_renderer('templates/cloud.pt')
     config.testing_add_renderer('templates/latest.pt')
 
-
 class ViewTests(unittest.TestCase):
     def setUp(self):
-        self.session = _initTestingDB()
+        self.session = init_db()
         self.config = testing.setUp()
 
     def tearDown(self):
@@ -68,7 +53,7 @@ class ViewTests(unittest.TestCase):
     def test_main_view(self):
         from shootout.views import main_view
         self.config.testing_securitypolicy(u'username')
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         result = main_view(request)
         self.assertEqual(result['username'], u'username')
@@ -77,7 +62,7 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_nosubmit_idea(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy(u'username')
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         result = idea_add(request)
         self.assertEqual(result['target'], None)
@@ -86,7 +71,7 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_nosubmit_comment(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy(u'username')
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         idea = self._addIdea()
         request = testing.DummyRequest(params={'target': idea.idea_id})
         result = idea_add(request)
@@ -96,7 +81,7 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_not_existing_target(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy(u'username')
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest(params={'target': 100})
         result = idea_add(request)
         self.assertEqual(result.code, 404)
@@ -104,8 +89,8 @@ class ViewTests(unittest.TestCase):
     def test_idea_add_submit_schema_fail_empty_params(self):
         from shootout.views import idea_add
         self.config.testing_securitypolicy(u'username')
-        _registerCommonTemplates(self.config)
-        _registerRoutes(self.config)
+        self.config.include(register_templates)
+        self.config.include('shootout.addroutes')
         request = testing.DummyRequest(post={'form.submitted': 'Shoot'})
         result = idea_add(request)
         self.assertEqual(
@@ -121,7 +106,7 @@ class ViewTests(unittest.TestCase):
         from shootout.views import idea_add
         from shootout.models import Idea
         self.config.testing_securitypolicy(u'username')
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         request = testing.DummyRequest(
             post={
                 'form.submitted': u'Shoot',
@@ -148,7 +133,7 @@ class ViewTests(unittest.TestCase):
     def test_vote_on_own_idea(self):
         from shootout.views import idea_vote
         from shootout.models import User
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         idea = self._addIdea()
         self.session.query(User).one()
         self.assertEqual(idea.user_voted(u'username'), False)
@@ -170,7 +155,7 @@ class ViewTests(unittest.TestCase):
 
     def test_positive_idea_voting(self):
         from shootout.views import idea_vote
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         user = self._addUser()
         idea = self._addIdea(user=user)
         voter = self._addUser(u'votername')
@@ -194,7 +179,7 @@ class ViewTests(unittest.TestCase):
 
     def test_negative_idea_voting(self):
         from shootout.views import idea_vote
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         user = self._addUser()
         idea = self._addIdea(user=user)
         voter = self._addUser(u'votername')
@@ -218,14 +203,14 @@ class ViewTests(unittest.TestCase):
 
     def test_registration_nosubmit(self):
         from shootout.views import user_add
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         result = user_add(request)
         self.assertTrue('form' in result)
 
     def test_registration_submit_empty(self):
         from shootout.views import user_add
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         result = user_add(request)
         self.assertTrue('form' in result)
@@ -245,7 +230,7 @@ class ViewTests(unittest.TestCase):
     def test_registration_submit_schema_succeed(self):
         from shootout.views import user_add
         from shootout.models import User
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         request = testing.DummyRequest(
             post={
                 'form.submitted': u'Register',
@@ -273,8 +258,8 @@ class ViewTests(unittest.TestCase):
     def test_user_view(self):
         from shootout.views import user_view
         self.config.testing_securitypolicy(u'username')
-        _registerRoutes(self.config)
-        _registerCommonTemplates(self.config)
+        self.config.include('shootout.addroutes')
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         request.matchdict = {'username': u'username'}
         self._addUser()
@@ -285,8 +270,8 @@ class ViewTests(unittest.TestCase):
     def test_idea_view(self):
         from shootout.views import idea_view
         self.config.testing_securitypolicy(u'username')
-        _registerRoutes(self.config)
-        _registerCommonTemplates(self.config)
+        self.config.include('shootout.addroutes')
+        self.config.include(register_templates)
         self._addIdea()
         request = testing.DummyRequest()
         request.matchdict = {'idea_id': 1}
@@ -299,8 +284,8 @@ class ViewTests(unittest.TestCase):
         from shootout.views import tag_view
         from shootout.models import Tag
         self.config.testing_securitypolicy(u'username')
-        _registerRoutes(self.config)
-        _registerCommonTemplates(self.config)
+        self.config.include('shootout.addroutes')
+        self.config.include(register_templates)
         user = self._addUser()
         tag1 = Tag(u'bar')
         tag2 = Tag(u'foo')
@@ -329,13 +314,13 @@ class ViewTests(unittest.TestCase):
 
     def test_about_view(self):
         from shootout.views import about_view
-        _registerCommonTemplates(self.config)
+        self.config.include(register_templates)
         request = testing.DummyRequest()
         about_view(request)
 
     def test_login_view_submit_fail(self):
         from shootout.views import login_view
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         self._addUser()
         request = testing.DummyRequest(
             post={
@@ -350,7 +335,7 @@ class ViewTests(unittest.TestCase):
 
     def test_login_view_submit_success(self):
         from shootout.views import login_view
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         self._addUser()
         request = testing.DummyRequest(
             post={
@@ -365,7 +350,7 @@ class ViewTests(unittest.TestCase):
 
     def test_logout_view(self):
         from shootout.views import logout_view
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         request = testing.DummyRequest()
         logout_view(request)
         messages = request.session.peek_flash()

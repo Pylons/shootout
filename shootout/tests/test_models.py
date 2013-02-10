@@ -4,7 +4,7 @@ import unittest
 from pyramid import testing
 
 
-def _initTestingDB():
+def init_db():
     from shootout.models import (
         DBSession,
         Base,
@@ -20,7 +20,7 @@ def _initTestingDB():
 
 class ModelsTestCase(unittest.TestCase):
     def setUp(self):
-        self.session = _initTestingDB()
+        self.session = init_db()
 
     def tearDown(self):
         import transaction

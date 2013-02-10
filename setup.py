@@ -19,7 +19,6 @@ requires = [
     'pyramid_simpleform',
     'cryptacular',
     'waitress',
-    'pyramid_beaker',
     'pycrypto',
     ]
 

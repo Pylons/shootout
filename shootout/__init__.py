@@ -1,13 +1,14 @@
 from pyramid.config import Configurator
-from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-
-from pyramid_beaker import session_factory_from_settings
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
 
-from .models import DBSession
-
+from .models import (
+    DBSession,
+    RootFactory,
+    )
 
 def main(global_config, **settings):  # pragma: no cover
     """ This function returns a Pyramid WSGI application.
@@ -15,20 +16,29 @@ def main(global_config, **settings):  # pragma: no cover
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
-    session_factory = session_factory_from_settings(settings)
+    session_factory = UnencryptedCookieSessionFactoryConfig(
+        settings['session.secret']
+        )
 
-    authn_policy = AuthTktAuthenticationPolicy('s0secret')
+    authn_policy = SessionAuthenticationPolicy()
     authz_policy = ACLAuthorizationPolicy()
 
     config = Configurator(
         settings=settings,
-        root_factory='shootout.models.RootFactory',
+        root_factory=RootFactory,
         authentication_policy=authn_policy,
         authorization_policy=authz_policy,
         session_factory=session_factory
-    )
+        )
 
     config.add_static_view('static', 'shootout:static')
+    config.include(addroutes)
+    config.scan()
+
+    return config.make_wsgi_app()
+
+def addroutes(config):
+    # broken out of main() so it can be used by unit tests
     config.add_route('idea', '/ideas/{idea_id}')
     config.add_route('user', '/users/{username}')
     config.add_route('tag', '/tags/{tag_name}')
@@ -39,8 +49,4 @@ def main(global_config, **settings):  # pragma: no cover
     config.add_route('logout', '/logout')
     config.add_route('about', '/about')
     config.add_route('main', '/')
-    config.scan()
-
-    return config.make_wsgi_app()
-
-
+    
