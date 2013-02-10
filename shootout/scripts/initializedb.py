@@ -1,12 +1,17 @@
 import os
 import sys
-import transaction
 
 from sqlalchemy import engine_from_config
 
-from pyramid.paster import get_appsettings, setup_logging
+from pyramid.paster import (
+    get_appsettings,
+    setup_logging,
+    )
 
-from shootout.models import DBSession, Base
+from shootout.models import (
+    DBSession,
+    Base,
+    )
 
 def usage(argv):
     cmd = os.path.basename(argv[0])

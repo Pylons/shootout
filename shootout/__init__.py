@@ -6,7 +6,7 @@ from pyramid_beaker import session_factory_from_settings
 
 from sqlalchemy import engine_from_config
 
-from shootout.models import DBSession
+from .models import DBSession
 
 
 def main(global_config, **settings):  # pragma: no cover
@@ -28,13 +28,7 @@ def main(global_config, **settings):  # pragma: no cover
         session_factory=session_factory
     )
 
-    config.add_subscriber('shootout.subscribers.add_base_template',
-                          'pyramid.events.BeforeRender')
-    config.add_subscriber('shootout.subscribers.csrf_validation',
-                          'pyramid.events.NewRequest')
-
     config.add_static_view('static', 'shootout:static')
-
     config.add_route('idea', '/ideas/{idea_id}')
     config.add_route('user', '/users/{username}')
     config.add_route('tag', '/tags/{tag_name}')
@@ -45,7 +39,6 @@ def main(global_config, **settings):  # pragma: no cover
     config.add_route('logout', '/logout')
     config.add_route('about', '/about')
     config.add_route('main', '/')
-
     config.scan()
 
     return config.make_wsgi_app()

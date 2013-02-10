@@ -7,17 +7,26 @@ from pyramid_simpleform import Form
 from pyramid_simpleform.renderers import FormRenderer
 
 from pyramid.view import view_config
-from pyramid.url import route_url
 from pyramid.renderers import render
-from pyramid.httpexceptions import HTTPMovedPermanently
-from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.security import authenticated_userid, remember, forget
 
+from pyramid.httpexceptions import (
+    HTTPMovedPermanently,
+    HTTPFound,
+    HTTPNotFound,
+    )
 
-from shootout.models import DBSession
-from shootout.models import User, Idea, Tag
+from pyramid.security import (
+    authenticated_userid,
+    remember,
+    forget,
+    )
 
+from .models import (
+    DBSession,
+    User,
+    Idea,
+    Tag,
+    )
 
 @view_config(permission='view', route_name='main',
              renderer='templates/main.pt')
@@ -56,7 +65,7 @@ def idea_vote(request):
     voter_username = authenticated_userid(request)
     voter = User.get_by_username(voter_username)
 
-    redirect_url = route_url('idea', request, idea_id=idea.idea_id)
+    redirect_url = request.route_url('idea', idea_id=idea.idea_id)
     response = HTTPMovedPermanently(location=redirect_url)
 
     if voter.user_id == idea.author_id:
@@ -105,7 +114,7 @@ def user_add(request):
 
         headers = remember(request, username)
 
-        redirect_url = route_url('main', request)
+        redirect_url = request.route_url('main')
 
         return HTTPFound(location=redirect_url, headers=headers)
 
@@ -158,7 +167,7 @@ def idea_add(request):
             idea.tags = tags
 
         session.add(idea)
-        redirect_url = route_url('idea', request, idea_id=idea.idea_id)
+        redirect_url = request.route_url('idea', idea_id=idea.idea_id)
 
         return HTTPFound(location=redirect_url)
 
@@ -240,7 +249,7 @@ def about_view(request):
 
 @view_config(permission='view', route_name='login')
 def login_view(request):
-    main_view = route_url('main', request)
+    main_view = request.route_url('main')
     came_from = request.params.get('came_from', main_view)
 
     post_data = request.POST
@@ -262,8 +271,7 @@ def logout_view(request):
     request.session.invalidate()
     request.session.flash(u'Logged out successfully.')
     headers = forget(request)
-    return HTTPFound(location=route_url('main', request),
-                     headers=headers)
+    return HTTPFound(location=request.route_url('main'), headers=headers)
 
 
 def toolbar_view(request):

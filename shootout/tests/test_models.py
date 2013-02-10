@@ -5,8 +5,10 @@ from pyramid import testing
 
 
 def _initTestingDB():
-    from shootout.models import DBSession
-    from shootout.models import Base
+    from shootout.models import (
+        DBSession,
+        Base,
+        )
     from sqlalchemy import create_engine
     engine = create_engine('sqlite://')
     DBSession.configure(bind=engine)

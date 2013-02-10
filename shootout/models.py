@@ -1,33 +1,42 @@
 import cryptacular.bcrypt
 
-from sqlalchemy import Table
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import scoped_session
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import relation
-from sqlalchemy.orm import backref
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import synonym
-from sqlalchemy.orm import joinedload
-from sqlalchemy.types import Integer
-from sqlalchemy.types import Unicode
-from sqlalchemy.types import UnicodeText
+from sqlalchemy import (
+    Table,
+    Column,
+    ForeignKey,
+    )
+
+from sqlalchemy.orm import (
+    scoped_session,
+    sessionmaker,
+    relation,
+    backref,
+    column_property,
+    synonym,
+    joinedload,
+    )
+
+from sqlalchemy.types import (
+    Integer,
+    Unicode,
+    UnicodeText,
+    )
+
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from pyramid.security import Everyone
-from pyramid.security import Authenticated
-from pyramid.security import Allow
-
+from pyramid.security import (
+    Everyone,
+    Authenticated,
+    Allow,
+    )
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
 
 crypt = cryptacular.bcrypt.BCRYPTPasswordManager()
-
 
 def hash_password(password):
     return unicode(crypt.encode(password))
