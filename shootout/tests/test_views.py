@@ -130,6 +130,37 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(idea.tags[1].name, u'bar')
         self.assertEqual(idea.tags[2].name, u'def')
 
+    def test_comment_add_submit_schema_succeed(self):
+        from shootout.views import idea_add
+        from shootout.models import Idea
+        idea = self._addIdea()
+        self.config.testing_securitypolicy(u'commentator')
+        _registerRoutes(self.config)
+        request = testing.DummyRequest(
+            post={
+                'form.submitted': u'Shoot',
+                'tags': u'abc def, bar',
+                'text': u'My comment is cool',
+                'title': u'My comment',
+                'target': unicode(idea.idea_id),
+            }
+        )
+        user = self._addUser(u'commentator')
+        result = idea_add(request)
+        self.assertEqual(result.location, 'http://example.com/ideas/2')
+        ideas = self.session.query(Idea).all()
+        self.assertEqual(len(ideas), 2)
+        comment = ideas[1]
+        self.assertEqual(comment.idea_id, 2)
+        self.assertEqual(comment.target_id, 1)
+        self.assertEqual(comment.text, u'My comment is cool')
+        self.assertEqual(comment.title, u'My comment')
+        self.assertEqual(comment.author, user)
+        self.assertEqual(len(comment.tags), 3)
+        self.assertEqual(comment.tags[0].name, u'abc')
+        self.assertEqual(comment.tags[1].name, u'bar')
+        self.assertEqual(comment.tags[2].name, u'def')
+
     def test_vote_on_own_idea(self):
         from shootout.views import idea_vote
         from shootout.models import User
