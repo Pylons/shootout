@@ -135,9 +135,9 @@ class ViewTests(unittest.TestCase):
         from shootout.models import Idea
         idea = self._addIdea()
         self.config.testing_securitypolicy(u'commentator')
-        _registerRoutes(self.config)
+        self.config.include('shootout.addroutes')
         request = testing.DummyRequest(
-            post={
+            params={
                 'form.submitted': u'Shoot',
                 'tags': u'abc def, bar',
                 'text': u'My comment is cool',
@@ -145,6 +145,7 @@ class ViewTests(unittest.TestCase):
                 'target': unicode(idea.idea_id),
             }
         )
+        request.method = 'POST'
         user = self._addUser(u'commentator')
         result = idea_add(request)
         self.assertEqual(result.location, 'http://example.com/ideas/2')
