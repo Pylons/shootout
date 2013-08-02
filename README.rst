@@ -38,7 +38,7 @@ Python 2.6 or 2.7 is required.
 
 - python setup.py develop
 
-- initialize_shootout_db
+- initialize_shootout_db development.ini
 
 - pserve development.ini
 
