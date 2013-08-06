@@ -344,12 +344,6 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(result['ideas'].one().idea_id, idea3.idea_id)
         self.assertEqual(result['tag'], u'foo')
 
-    def test_about_view(self):
-        from shootout.views import about_view
-        self.config.include(register_templates)
-        request = testing.DummyRequest()
-        about_view(request)
-
     def test_login_view_submit_fail(self):
         from shootout.views import login_view
         self.config.include('shootout.addroutes')

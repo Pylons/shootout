@@ -13,6 +13,8 @@ def add_base_template(event):
 
 @subscriber(NewRequest)
 def csrf_validation(event):
+    if event.request.environ.get('paste.testing'):
+        return
     if event.request.method == "POST":
         token = event.request.POST.get("_csrf")
         if token is None or token != event.request.session.get_csrf_token():
