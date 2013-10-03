@@ -12,6 +12,7 @@ requires = [
     'pyramid>=1.3',
     'SQLAlchemy',
     'transaction',
+    'pyramid_chameleon',
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'pyramid_exclog',
