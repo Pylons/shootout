@@ -31,6 +31,7 @@ def main(global_config, **settings):  # pragma: no cover
         session_factory=session_factory
         )
 
+    config.include('pyramid_chameleon')
     config.add_static_view('static', 'shootout:static')
     config.include(addroutes)
     config.scan()
